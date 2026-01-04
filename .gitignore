@@ -50,3 +50,6 @@ next-env.d.ts
 
 # Keep only placeholder
 !/public/weapons/placeholder.svg
+
+.vercel
+.env*.local
