@@ -1,9 +1,8 @@
 /**
- * Weapon Asset Upload Script
+ * Weapon Asset Upload Script (Sequential Version)
  * 
- * Uploads compressed assets from public/weapons-compressed to Supabase Storage.
- * Maintains the folder structure:
- * q{quarter}/artifact_{id}/...
+ * Uploads organized assets from public/weapons-organized to Supabase Storage.
+ * Structure: q{quarter}/artifact_{id}/...
  * 
  * Usage:
  *   npx tsx scripts/upload-weapons.ts
@@ -13,6 +12,7 @@ import fs from 'fs';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
+import { glob } from 'glob';
 
 // Load .env.local
 dotenv.config({ path: path.join(__dirname, '../.env.local') });
@@ -21,9 +21,8 @@ dotenv.config({ path: path.join(__dirname, '../.env.local') });
 // CONFIGURATION
 // =============================================================================
 
-const SOURCE_DIR = path.join(__dirname, '../public/weapons-compressed');
+const ORGANIZED_DIR = path.join(__dirname, '../public/weapons-organized');
 const SUPABASE_BUCKET = 'weapons';
-const CONCURRENCY = 5; // Upload 5 files at a time
 
 // Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -33,15 +32,19 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 // HELPERS
 // =============================================================================
 
-function getArtifactId(filename: string): string {
-    // Extract number from art_001_...
-    const match = filename.match(/art_(\d+)/);
-    return match ? `artifact_${match[1]}` : 'unknown';
+async function delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function getQuarter(artifactId: string): number {
-    const num = parseInt(artifactId.replace('artifact_', ''));
-    return Math.ceil(num / 13);
+async function fileExists(supabase: any, path: string): Promise<boolean> {
+    const { data, error } = await supabase.storage
+        .from(SUPABASE_BUCKET)
+        .list(path.split('/').slice(0, -1).join('/'), {
+            search: path.split('/').pop()
+        });
+
+    if (error || !data) return false;
+    return data.some((f: any) => f.name === path.split('/').pop());
 }
 
 // =============================================================================
@@ -50,84 +53,107 @@ function getQuarter(artifactId: string): number {
 
 async function uploadAll() {
     console.log('═══════════════════════════════════════════════════════════════');
-    console.log('              WEAPON ASSET UPLOAD SCRIPT');
+    console.log('         WEAPON ASSET UPLOAD SCRIPT (ROBUST)');
     console.log('═══════════════════════════════════════════════════════════════\n');
 
     if (!supabaseUrl || !supabaseKey) {
-        console.error('❌ Missing Supabase credentials.');
-        console.error('   Ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are in .env.local');
+        console.error('❌ Missing Supabase credentials in .env.local');
         process.exit(1);
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Check if source dir exists
-    if (!fs.existsSync(SOURCE_DIR)) {
-        console.error(`❌ Source directory not found: ${SOURCE_DIR}`);
-        console.error('   Run compression script first!');
+    if (!fs.existsSync(ORGANIZED_DIR)) {
+        console.error(`❌ Organized directory not found: ${ORGANIZED_DIR}`);
         process.exit(1);
     }
 
-    const files = fs.readdirSync(SOURCE_DIR).filter(f => !f.startsWith('.'));
-    console.log(`📊 Found ${files.length} files to upload\n`);
+    // Get all files recursively from q1 directory
+    const files = await glob('**/*', {
+        cwd: ORGANIZED_DIR,
+        nodir: true,
+        posix: true
+    });
+
+    console.log(`📊 Total files found: ${files.length}\n`);
 
     let uploaded = 0;
     let failed = 0;
     let skipped = 0;
 
-    // Process in batches
-    for (let i = 0; i < files.length; i += CONCURRENCY) {
-        const batch = files.slice(i, i + CONCURRENCY);
-        console.log(`🚀 Uploading batch ${Math.floor(i / CONCURRENCY) + 1}/${Math.ceil(files.length / CONCURRENCY)}...`);
+    for (let i = 0; i < files.length; i++) {
+        const relativePath = files[i];
+        const filePath = path.join(ORGANIZED_DIR, relativePath);
+        const progress = `[${i + 1}/${files.length}]`;
 
-        await Promise.all(batch.map(async (file) => {
+        // Check if file already exists to skip successfully uploaded ones
+        try {
+            const exists = await fileExists(supabase, relativePath);
+            if (exists) {
+                console.log(`🚀 ${progress} Skipping ${relativePath} (Already exists)`);
+                skipped++;
+                continue;
+            }
+        } catch (err) {
+            // If check fails, try to upload anyway
+        }
+
+        let attempts = 0;
+        const maxAttempts = 3;
+        let success = false;
+
+        while (attempts < maxAttempts && !success) {
+            attempts++;
+            if (attempts > 1) {
+                process.stdout.write(`   🔄 Retry ${attempts}/${maxAttempts}... `);
+            } else {
+                process.stdout.write(`🚀 ${progress} Uploading ${relativePath}... `);
+            }
+
             try {
-                const filePath = path.join(SOURCE_DIR, file);
                 const fileBuffer = fs.readFileSync(filePath);
-
-                // Determine storage path: q1/artifact_001/day0.webp
-                // Input: art_001_day0.webp -> Output: day0.webp
-                const artifactId = getArtifactId(file);
-                const quarter = getQuarter(artifactId);
-
-                // Remove prefix "art_001_" to get clean name "day0.webp"
-                const cleanName = file.replace(/^art_\d+_/, '');
-                const storagePath = `q${quarter}/${artifactId}/${cleanName}`;
-
-                const contentType = file.endsWith('.webp') ? 'image/webp' : 'image/gif';
-
-                // Check if exists (optional, but saves bandwidth)
-                // For now, we prefer UPSERT=true to ensure latest version
+                const contentType = relativePath.endsWith('.webp') ? 'image/webp' : 'image/gif';
 
                 const { error } = await supabase.storage
                     .from(SUPABASE_BUCKET)
-                    .upload(storagePath, fileBuffer, {
+                    .upload(relativePath, fileBuffer, {
                         contentType,
                         upsert: true,
                     });
 
                 if (error) {
-                    console.error(`   ❌ Failed: ${file} -> ${storagePath}: ${error.message}`);
-                    failed++;
+                    console.log(`❌ FAILED: ${error.message}`);
+                    if (attempts < maxAttempts) {
+                        await delay(2000 * attempts); // Exponential delay
+                    }
                 } else {
-                    console.log(`   ✅ ${file} -> ${storagePath}`);
+                    console.log('✅ DONE');
+                    success = true;
                     uploaded++;
                 }
-            } catch (err) {
-                console.error(`   ❌ Error processing ${file}: ${err}`);
-                failed++;
+            } catch (err: any) {
+                console.log(`❌ ERROR: ${err.message}`);
+                if (attempts < maxAttempts) {
+                    await delay(2000 * attempts);
+                }
             }
-        }));
+        }
+
+        if (!success) {
+            failed++;
+        }
+
+        // Small breathe between files
+        await delay(500);
     }
 
-    console.log('');
-    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('\n═══════════════════════════════════════════════════════════════');
     console.log('                        SUMMARY');
     console.log('═══════════════════════════════════════════════════════════════');
-    console.log(`  ✅ Uploaded: ${uploaded}`);
-    console.log(`  ❌ Failed:   ${failed}`);
-    console.log(`  ⏭️  Skipped:  ${skipped}`);
-    console.log('');
+    console.log(`  ✅ Successfully Uploaded: ${uploaded}`);
+    console.log(`  ⏭️  Skipped (Existing):   ${skipped}`);
+    console.log(`  ❌ Failed (All attempts): ${failed}`);
+    console.log('═══════════════════════════════════════════════════════════════\n');
 }
 
 uploadAll().catch(console.error);
