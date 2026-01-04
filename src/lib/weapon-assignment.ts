@@ -41,47 +41,68 @@ export function assignWeaponForWeek(
   const quarterNumber = getQuarterNumber(weekNumber);
   const weekInQuarter = getWeekInQuarter(weekNumber);
   const rarity = getRarityForWeek(weekInQuarter);
-  
+
   // Use Q1 weapons for all quarters until more are added
   const allWeapons = WEAPONS_BY_QUARTER[quarterNumber] || WEAPONS_BY_QUARTER[1];
   const poolName = `q${Math.min(quarterNumber, 1)}_${rarity.toLowerCase()}`;
-  
+
   // Filter to this shuffle pool
   const pool = allWeapons.filter(w => w.artifact_metadata.shuffle_pool === poolName);
-  
+
   if (pool.length === 0) {
     // Fallback to first weapon if pool not found
     console.warn(`No weapons in pool: ${poolName}, using fallback`);
     return allWeapons[0];
   }
-  
+
   // Aces are fixed (Week 13 = always the same Ace)
   if (rarity === 'Ace') {
     return pool[0];
   }
-  
+
   // Seeded random: same user + week = same result
   const seed = hashString(`${userId}-week${weekNumber}`);
   const index = seed % pool.length;
-  
+
   return pool[index];
 }
 
 /**
  * Get the asset URL for a weapon at a specific forge level.
- * Uses local assets from the public folder.
+ * Uses Supabase Storage assets (uploaded via scripts).
  */
 export function getWeaponAssetUrl(
   artifactId: string,
   forgeLevel: number,
   type: 'static' | 'animation' = 'static'
 ): string {
-  const artNumber = artifactId.replace('artifact_', '');
-  const filename = type === 'animation' 
-    ? `art_${artNumber}_day${forgeLevel}_anim.gif` 
-    : `art_${artNumber}_day${forgeLevel}.png`;
-  
-  return `/weapons/${filename}`;
+  // Extract number from artifactId (e.g., "artifact_001" -> 1)
+  const artNumberStr = artifactId.replace('artifact_', '');
+  const artNumber = parseInt(artNumberStr);
+
+  // Calculate quarter (1-13 = Q1, 14-26 = Q2, etc.)
+  const quarter = Math.ceil(artNumber / 13);
+
+  // Filename logic:
+  // Old: art_001_day1.png
+  // New: q1/artifact_001/day1.webp
+
+  let filename = `day${forgeLevel}`;
+  if (type === 'animation') {
+    filename += '_anim';
+  }
+  filename += '.webp';
+
+  const storagePath = `q${quarter}/${artifactId}/${filename}`;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  if (!supabaseUrl) {
+    console.warn('NEXT_PUBLIC_SUPABASE_URL missing, falling back to local assets');
+    // Fallback to local (won't work for compressed structure, but safe default)
+    return `/weapons/art_${artNumberStr}_day${forgeLevel}${type === 'animation' ? '_anim.gif' : '.png'}`;
+  }
+
+  return `${supabaseUrl}/storage/v1/object/public/weapons/${storagePath}`;
 }
 
 /**
@@ -98,11 +119,13 @@ export function getWeaponDisplayAssets(
 } {
   return {
     currentImage: getWeaponAssetUrl(artifactId, forgeLevel),
-    nextAnimation: forgeLevel < 7 
+    nextAnimation: forgeLevel < 7
       ? getWeaponAssetUrl(artifactId, forgeLevel + 1, 'animation')
       : null,
-    sketchImage: getWeaponAssetUrl(artifactId, 0),
-    fullRevealImage: getWeaponAssetUrl(artifactId, 7),
+    // Day 0 is always static
+    sketchImage: getWeaponAssetUrl(artifactId, 0, 'static'),
+    // Day 7 is the full reveal
+    fullRevealImage: getWeaponAssetUrl(artifactId, 7, 'static'),
   };
 }
 
