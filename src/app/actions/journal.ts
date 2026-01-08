@@ -17,6 +17,38 @@ import { assignWeaponForWeek, getWeaponAssetUrl } from '@/lib/weapon-assignment'
 import { countWords } from '@/lib/word-count';
 import { revalidatePath } from 'next/cache';
 
+// =============================================================================
+// RATE LIMITER (In-memory, per-user)
+// =============================================================================
+// Simple sliding window rate limiter
+// Note: In production with multiple serverless instances, use Redis instead
+
+const rateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 10; // 10 submissions per minute
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const timestamps = rateLimitMap.get(userId) || [];
+
+  // Remove old timestamps outside the window
+  const validTimestamps = timestamps.filter(t => now - t < RATE_LIMIT_WINDOW_MS);
+
+  if (validTimestamps.length >= RATE_LIMIT_MAX_REQUESTS) {
+    return false; // Rate limited
+  }
+
+  // Add current timestamp
+  validTimestamps.push(now);
+  rateLimitMap.set(userId, validTimestamps);
+
+  return true; // Allowed
+}
+
+// =============================================================================
+// TYPES
+// =============================================================================
+
 export type JournalSubmitResult = {
   success: boolean;
   wordCount: number;
@@ -27,16 +59,26 @@ export type JournalSubmitResult = {
   isFirstEntry?: boolean;
 };
 
-/**
- * Submit a journal entry.
- * If this is the user's FIRST entry, it starts their journey (sets journey_start_date).
- */
+// =============================================================================
+// SUBMIT JOURNAL ENTRY
+// =============================================================================
+
 export async function submitJournalEntry(content: string): Promise<JournalSubmitResult> {
   const supabase = await createClient();
   const { data: { user: authUser } } = await supabase.auth.getUser();
 
   if (!authUser) {
     throw new Error('Unauthorized');
+  }
+
+  // Rate limiting check
+  if (!checkRateLimit(authUser.id)) {
+    return {
+      success: false,
+      wordCount: 0,
+      isComplete: false,
+      message: 'Too many submissions. Please wait a moment.',
+    };
   }
 
   // Get user profile
@@ -78,6 +120,17 @@ export async function submitJournalEntry(content: string): Promise<JournalSubmit
   const weekNumber = getWeekNumber(dayNumber);
   const entryDate = getTodayDateString(user.timezone);
 
+  // Check if entry already exists for this day (to avoid double-counting)
+  const existingEntry = await db.query.journalEntries.findFirst({
+    where: and(
+      eq(journalEntries.userId, user.id),
+      eq(journalEntries.dayNumber, dayNumber)
+    ),
+  });
+
+  const wasAlreadyComplete = existingEntry?.isComplete || false;
+  const previousWordCount = existingEntry?.wordCount || 0;
+
   // Save journal entry (upsert)
   await db
     .insert(journalEntries)
@@ -117,15 +170,29 @@ export async function submitJournalEntry(content: string): Promise<JournalSubmit
       forgeAnimation = getWeaponAssetUrl(weapon.artifactId, newForgeLevel, 'animation');
     }
 
-    // Update user stats
-    await db
-      .update(users)
-      .set({
-        totalEntries: (user.totalEntries || 0) + 1,
-        totalWords: (user.totalWords || 0) + wordCount,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, user.id));
+    // FIX: Only update stats if this is a NEW completion (not already complete)
+    if (!wasAlreadyComplete) {
+      await db
+        .update(users)
+        .set({
+          totalEntries: (user.totalEntries || 0) + 1,
+          totalWords: (user.totalWords || 0) + wordCount,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, user.id));
+    } else {
+      // Entry was already complete, just update word diff if any
+      const wordDiff = wordCount - previousWordCount;
+      if (wordDiff !== 0) {
+        await db
+          .update(users)
+          .set({
+            totalWords: (user.totalWords || 0) + wordDiff,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, user.id));
+      }
+    }
   }
 
   revalidatePath('/journal');
@@ -143,9 +210,10 @@ export async function submitJournalEntry(content: string): Promise<JournalSubmit
   };
 }
 
-/**
- * Get current dashboard state for the journal page.
- */
+// =============================================================================
+// GET DASHBOARD STATE (Optimized with parallel queries)
+// =============================================================================
+
 export async function getDashboardState() {
   const supabase = await createClient();
   const { data: { user: authUser } } = await supabase.auth.getUser();
@@ -163,6 +231,7 @@ export async function getDashboardState() {
   const weekNumber = getWeekNumber(dayNumber);
 
   // LAZY FINALIZATION: Check if any previous weeks need to be locked
+  // Only run if we have previous weeks
   if (weekNumber > 1) {
     await finalizePreviousWeapons(user.id, weekNumber);
   }
@@ -171,30 +240,23 @@ export async function getDashboardState() {
   const quarterNumber = getQuarterNumber(weekNumber);
   const weekInQuarter = getWeekInQuarter(weekNumber);
 
-  // Get today's entry (if exists)
-  const todayEntry = dayNumber > 0
-    ? await db.query.journalEntries.findFirst({
-      where: and(
-        eq(journalEntries.userId, user.id),
-        eq(journalEntries.dayNumber, dayNumber)
-      ),
-    })
-    : null;
+  // OPTIMIZATION: Run queries in parallel
+  const [todayEntry, weapon] = await Promise.all([
+    // Get today's entry
+    dayNumber > 0
+      ? db.query.journalEntries.findFirst({
+        where: and(
+          eq(journalEntries.userId, user.id),
+          eq(journalEntries.dayNumber, dayNumber)
+        ),
+      })
+      : Promise.resolve(null),
 
-  // Get current weapon (if journey has started)
-  let weapon = null;
-  if (weekNumber > 0) {
-    const w = await ensureWeaponExists(user.id, weekNumber);
-    weapon = {
-      artifactId: w.artifactId,
-      name: w.artifactName,
-      category: w.category,
-      rarity: w.rarity,
-      forgeLevel: w.forgeLevel || 0,
-      completedDays: w.completedDays as boolean[],
-      currentImage: getWeaponAssetUrl(w.artifactId, w.forgeLevel || 0),
-    };
-  }
+    // Get current weapon
+    weekNumber > 0
+      ? ensureWeaponExists(user.id, weekNumber)
+      : Promise.resolve(null),
+  ]);
 
   return {
     user: {
@@ -217,13 +279,22 @@ export async function getDashboardState() {
       wordCount: todayEntry.wordCount,
       isComplete: todayEntry.isComplete || false,
     } : null,
-    weapon,
+    weapon: weapon ? {
+      artifactId: weapon.artifactId,
+      name: weapon.artifactName,
+      category: weapon.category,
+      rarity: weapon.rarity,
+      forgeLevel: weapon.forgeLevel || 0,
+      completedDays: weapon.completedDays as boolean[],
+      currentImage: getWeaponAssetUrl(weapon.artifactId, weapon.forgeLevel || 0),
+    } : null,
   };
 }
 
-/**
- * Ensure a weapon exists for a given week, creating if needed.
- */
+// =============================================================================
+// HELPER: Ensure weapon exists for a week
+// =============================================================================
+
 async function ensureWeaponExists(userId: string, weekNumber: number) {
   let weapon = await db.query.userWeapons.findFirst({
     where: and(
@@ -261,10 +332,10 @@ async function ensureWeaponExists(userId: string, weekNumber: number) {
   return weapon;
 }
 
-/**
- * Finalize any weapons from previous weeks that are still open.
- * "Locks" the card based on whatever progress was made.
- */
+// =============================================================================
+// HELPER: Finalize previous weeks' weapons
+// =============================================================================
+
 async function finalizePreviousWeapons(userId: string, currentWeekNumber: number) {
   // Find all non-finalized weapons from past weeks
   const pendingWeapons = await db.query.userWeapons.findMany({
@@ -277,7 +348,7 @@ async function finalizePreviousWeapons(userId: string, currentWeekNumber: number
 
   if (pendingWeapons.length === 0) return;
 
-  // Process each one
+  // Process each one (could batch update, but usually just 1)
   for (const w of pendingWeapons) {
     const completedCount = (w.completedDays as boolean[]).filter(Boolean).length;
 
@@ -286,18 +357,16 @@ async function finalizePreviousWeapons(userId: string, currentWeekNumber: number
       .set({
         isFinalized: true,
         finalForgeLevel: completedCount,
-        // Ensure regular forge level matches the final result (data integrity)
         forgeLevel: completedCount,
       })
       .where(eq(userWeapons.id, w.id));
-
-    console.log(`🔒 Finalized Week ${w.weekNumber} weapon for User ${userId}: Level ${completedCount}`);
   }
 }
 
-/**
- * Get all weapons for the armory view.
- */
+// =============================================================================
+// GET USER WEAPONS (Armory)
+// =============================================================================
+
 export async function getUserWeapons() {
   const supabase = await createClient();
   const { data: { user: authUser } } = await supabase.auth.getUser();
