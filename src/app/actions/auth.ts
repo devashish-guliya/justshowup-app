@@ -7,42 +7,42 @@ import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 
 /**
- * Initiate Google OAuth sign-in.
- * This redirects the user to Google's consent screen.
+ * Get the base URL for redirects
  */
-export async function signInWithGoogle() {
+function getBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'http://localhost:3000';
+}
+
+/**
+ * Initiate Google OAuth sign-in.
+ * @param timezone - User's timezone from client (e.g., 'Asia/Kolkata')
+ */
+export async function signInWithGoogle(timezone: string = 'UTC') {
   const supabase = await createClient();
 
-  // Robust URL detection
-  let baseUrl = 'http://localhost:3000';
-
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
-    baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  } else if (process.env.VERCEL_URL) {
-    // Vercel auto-sets this system var (without protocol)
-    baseUrl = `https://${process.env.VERCEL_URL}`;
-  } else {
-    // Fallback to headers (mostly for local testing if env not set)
-    const headersList = await headers();
-    const origin = headersList.get('origin') || headersList.get('host') || '';
-    if (origin) {
-      baseUrl = origin.startsWith('http') ? origin : `https://${origin}`;
-    }
-  }
+  let baseUrl = getBaseUrl();
 
   // Ensure only origin (strip any path like /login)
   try {
     const url = new URL(baseUrl);
-    baseUrl = url.origin; // Gets just protocol + host, no path
+    baseUrl = url.origin;
   } catch {
-    // If URL parsing fails, just remove trailing slash
     baseUrl = baseUrl.replace(/\/$/, '');
   }
+
+  // Encode timezone in the redirect URL so callback can read it
+  const redirectTo = `${baseUrl}/auth/callback?timezone=${encodeURIComponent(timezone)}`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${baseUrl}/auth/callback`,
+      redirectTo,
       queryParams: {
         access_type: 'offline',
         prompt: 'consent',

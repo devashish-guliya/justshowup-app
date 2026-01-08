@@ -1,14 +1,25 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useTransition, useEffect, useState } from 'react';
 import { signInWithGoogle } from '@/app/actions/auth';
 
 export default function LoginPage() {
   const [isPending, startTransition] = useTransition();
+  const [timezone, setTimezone] = useState('UTC');
+
+  useEffect(() => {
+    // Detect timezone on client
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (tz) setTimezone(tz);
+    } catch {
+      // Fallback to UTC
+    }
+  }, []);
 
   const handleGoogleLogin = () => {
     startTransition(async () => {
-      await signInWithGoogle();
+      await signInWithGoogle(timezone);
     });
   };
 

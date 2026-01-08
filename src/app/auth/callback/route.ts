@@ -6,17 +6,16 @@ import { eq } from 'drizzle-orm';
 export async function GET(request: Request) {
     const requestUrl = new URL(request.url);
     const code = requestUrl.searchParams.get('code');
+    const timezone = requestUrl.searchParams.get('timezone') || 'UTC';
     const origin = requestUrl.origin;
 
     if (!code) {
-        // No code, redirect to login
         return NextResponse.redirect(`${origin}/login`);
     }
 
     try {
         const supabase = await createClient();
 
-        // Exchange code for session
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (error) {
@@ -25,28 +24,24 @@ export async function GET(request: Request) {
         }
 
         if (data.user) {
-            // Check if user profile exists, if not create it
             try {
                 const existingUser = await db.query.users.findFirst({
                     where: eq(users.id, data.user.id),
                 });
 
                 if (!existingUser) {
-                    // New user - create profile with UTC as default timezone
-                    // (User can update timezone in settings later)
+                    // New user - create profile with detected timezone
                     await db.insert(users).values({
                         id: data.user.id,
                         email: data.user.email!,
-                        timezone: 'UTC',
+                        timezone: timezone,
                     });
                 }
             } catch (dbError) {
                 console.error('Database error in callback:', dbError);
-                // Continue anyway - user is authenticated, profile creation can be retried
             }
         }
 
-        // Redirect to journal after successful auth
         return NextResponse.redirect(`${origin}/journal`);
     } catch (err) {
         console.error('Unexpected error in auth callback:', err);
