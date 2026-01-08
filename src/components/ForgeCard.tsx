@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useJournalStore } from '@/stores/journal-store';
 import { FORGE_FILL } from '@/lib/calendar';
 import { format } from 'date-fns';
+import { ElectricBorder } from './ElectricBorder';
 
 // Add CSS for animation overlay
 import '../app/globals.css';
@@ -160,6 +161,9 @@ export function ForgeCard({
           style={{ width: cardSize.width, height: cardSize.height }}
           onClick={handleCardClick}
         >
+          {/* Electric Border Effect */}
+          <ElectricBorder forgeLevel={forgeLevel} />
+
           {/* Front Face - Text Entry */}
           <div className="card-face card-front">
             <div className="front-header">
