@@ -90,55 +90,74 @@ body {
   color: var(--text-secondary);
 }
 
-/* Week Slider */
+/* Ruler Slider */
 .week-slider {
-  flex: 0 0 var(--pills-height);
+  flex: 0 0 80px;
   display: flex;
-  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  /* Hide scrollbar */
+  -ms-overflow-style: none;
+  padding: 0 50%;
+  /* Center the items */
+  mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
+}
+
+.week-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.ruler-track {
+  display: flex;
+  align-items: flex-end;
+  height: 60px;
+  gap: 24px;
+  padding-bottom: 10px;
+}
+
+.ruler-tick {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
+  opacity: 0.4;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-width: 30px;
 }
 
-.day-pill {
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.ruler-tick.selected {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.ruler-tick.future {
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.tick-mark {
+  width: 2px;
+  height: 12px;
+  background: var(--text-primary);
+  border-radius: 2px;
+}
+
+.ruler-tick.selected .tick-mark {
+  height: 24px;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.tick-label {
   font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  background: var(--bg-pill);
-  color: var(--text-on-dark);
+  font-family: 'Inter', monospace;
 }
 
-.day-pill:hover {
-  transform: scale(1.05);
-}
-
-.day-pill.selected {
-  background: var(--accent);
-  color: white;
-  box-shadow: 0 4px 12px rgba(255, 122, 61, 0.4);
-}
-
-.day-pill.future {
-  background: var(--bg-pill-future);
-  color: var(--text-muted);
-  cursor: default;
-}
-
-.day-pill.future:hover {
-  transform: none;
-}
-
-.day-pill.completed {
-  background: #22c55e;
-  color: white;
-}
 
 /* Card Container */
 .card-container {
