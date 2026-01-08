@@ -71,10 +71,19 @@ export function getDayInWeek(dayNumber: number): number {
  * Get the day number range for a given week.
  * Week 1 → [1, 7], Week 2 → [8, 14], etc.
  */
+// ...existing code...
 export function getWeekDayRange(weekNumber: number): { start: number; end: number } {
   const start = (weekNumber - 1) * 7 + 1;
   const end = weekNumber * 7;
   return { start, end };
+}
+
+/**
+ * Get the starting day number for a given week.
+ * Week 1 -> 1, Week 2 -> 8, etc.
+ */
+export function getWeekStartDayNumber(weekNumber: number): number {
+  return (weekNumber - 1) * 7 + 1;
 }
 
 // =============================================================================

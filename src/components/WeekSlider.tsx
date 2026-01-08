@@ -1,6 +1,6 @@
 'use client';
 
-import { getWeekStartDayNumber, getDayOfWeek } from '@/lib/calendar';
+import { getWeekStartDayNumber } from '@/lib/calendar';
 
 interface WeekSliderProps {
   currentDayNumber: number;
@@ -10,15 +10,15 @@ interface WeekSliderProps {
   onSelectDay: (day: number) => void;
 }
 
-export function WeekSlider({ 
-  currentDayNumber, 
-  weekNumber, 
-  selectedDay, 
+export function WeekSlider({
+  currentDayNumber,
+  weekNumber,
+  selectedDay,
   completedDays,
-  onSelectDay 
+  onSelectDay
 }: WeekSliderProps) {
   const weekStartDay = getWeekStartDayNumber(weekNumber);
-  
+
   return (
     <div className="week-slider">
       {Array.from({ length: 7 }, (_, i) => {
@@ -27,14 +27,14 @@ export function WeekSlider({
         const isSelected = dayNumber === selectedDay;
         const isFuture = dayNumber > currentDayNumber;
         const isCompleted = completedDays[i];
-        
+
         const classes = [
           'day-pill',
           isSelected && 'selected',
           isFuture && 'future',
           isCompleted && !isSelected && 'completed',
         ].filter(Boolean).join(' ');
-        
+
         return (
           <button
             key={dayNumber}

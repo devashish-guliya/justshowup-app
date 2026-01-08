@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { db, journalEntries, users, userWeapons } from '@/db';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, lt } from 'drizzle-orm';
 import {
   getCurrentDayNumber,
   getWeekNumber,
@@ -161,6 +161,12 @@ export async function getDashboardState() {
   // Calculate position (might be 0 if journey hasn't started)
   const dayNumber = getCurrentDayNumber(user.journeyStartDate, user.timezone);
   const weekNumber = getWeekNumber(dayNumber);
+
+  // LAZY FINALIZATION: Check if any previous weeks need to be locked
+  if (weekNumber > 1) {
+    await finalizePreviousWeapons(user.id, weekNumber);
+  }
+
   const dayInWeek = getDayInWeek(dayNumber);
   const quarterNumber = getQuarterNumber(weekNumber);
   const weekInQuarter = getWeekInQuarter(weekNumber);
@@ -253,6 +259,40 @@ async function ensureWeaponExists(userId: string, weekNumber: number) {
   }
 
   return weapon;
+}
+
+/**
+ * Finalize any weapons from previous weeks that are still open.
+ * "Locks" the card based on whatever progress was made.
+ */
+async function finalizePreviousWeapons(userId: string, currentWeekNumber: number) {
+  // Find all non-finalized weapons from past weeks
+  const pendingWeapons = await db.query.userWeapons.findMany({
+    where: and(
+      eq(userWeapons.userId, userId),
+      lt(userWeapons.weekNumber, currentWeekNumber),
+      eq(userWeapons.isFinalized, false)
+    ),
+  });
+
+  if (pendingWeapons.length === 0) return;
+
+  // Process each one
+  for (const w of pendingWeapons) {
+    const completedCount = (w.completedDays as boolean[]).filter(Boolean).length;
+
+    await db
+      .update(userWeapons)
+      .set({
+        isFinalized: true,
+        finalForgeLevel: completedCount,
+        // Ensure regular forge level matches the final result (data integrity)
+        forgeLevel: completedCount,
+      })
+      .where(eq(userWeapons.id, w.id));
+
+    console.log(`🔒 Finalized Week ${w.weekNumber} weapon for User ${userId}: Level ${completedCount}`);
+  }
 }
 
 /**
