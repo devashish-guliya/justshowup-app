@@ -30,8 +30,14 @@ export async function signInWithGoogle() {
     }
   }
 
-  // Ensure no trailing slash
-  baseUrl = baseUrl.replace(/\/$/, '');
+  // Ensure only origin (strip any path like /login)
+  try {
+    const url = new URL(baseUrl);
+    baseUrl = url.origin; // Gets just protocol + host, no path
+  } catch {
+    // If URL parsing fails, just remove trailing slash
+    baseUrl = baseUrl.replace(/\/$/, '');
+  }
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',

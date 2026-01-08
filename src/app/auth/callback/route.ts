@@ -8,7 +8,12 @@ export async function GET(request: Request) {
     const code = requestUrl.searchParams.get('code');
     const origin = requestUrl.origin;
 
-    if (code) {
+    if (!code) {
+        // No code, redirect to login
+        return NextResponse.redirect(`${origin}/login`);
+    }
+
+    try {
         const supabase = await createClient();
 
         // Exchange code for session
@@ -21,30 +26,30 @@ export async function GET(request: Request) {
 
         if (data.user) {
             // Check if user profile exists, if not create it
-            const existingUser = await db.query.users.findFirst({
-                where: eq(users.id, data.user.id),
-            });
-
-            if (!existingUser) {
-                // New user - create profile
-                // Get timezone from browser (will be passed via state or default)
-                const timezone = requestUrl.searchParams.get('timezone') ||
-                    Intl.DateTimeFormat().resolvedOptions().timeZone ||
-                    'UTC';
-
-                await db.insert(users).values({
-                    id: data.user.id,
-                    email: data.user.email!,
-                    timezone: timezone,
-                    // journeyStartDate is null - starts on first entry
+            try {
+                const existingUser = await db.query.users.findFirst({
+                    where: eq(users.id, data.user.id),
                 });
+
+                if (!existingUser) {
+                    // New user - create profile with UTC as default timezone
+                    // (User can update timezone in settings later)
+                    await db.insert(users).values({
+                        id: data.user.id,
+                        email: data.user.email!,
+                        timezone: 'UTC',
+                    });
+                }
+            } catch (dbError) {
+                console.error('Database error in callback:', dbError);
+                // Continue anyway - user is authenticated, profile creation can be retried
             }
         }
 
         // Redirect to journal after successful auth
         return NextResponse.redirect(`${origin}/journal`);
+    } catch (err) {
+        console.error('Unexpected error in auth callback:', err);
+        return NextResponse.redirect(`${origin}/login?error=unexpected`);
     }
-
-    // No code, redirect to login
-    return NextResponse.redirect(`${origin}/login`);
 }
