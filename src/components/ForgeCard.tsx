@@ -31,7 +31,7 @@ export function ForgeCard({
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [cardSize, setCardSize] = useState({ width: 0, height: 0 });
-  
+
   const {
     draft,
     setDraft,
@@ -42,14 +42,14 @@ export function ForgeCard({
     setFlipped,
     toggleFlip,
   } = useJournalStore();
-  
+
   // Initialize draft with entry content
   useEffect(() => {
     if (entryContent && !draft) {
       setDraft(entryContent);
     }
   }, [entryContent, draft, setDraft]);
-  
+
   // Auto-flip to back for completed entries
   useEffect(() => {
     if (isComplete && !isToday) {
@@ -58,20 +58,20 @@ export function ForgeCard({
       setFlipped(false);
     }
   }, [isComplete, isToday, setFlipped]);
-  
+
   // Calculate card size to maintain 2:3 aspect ratio
   const updateCardSize = useCallback(() => {
     if (!containerRef.current) return;
-    
+
     const containerWidth = containerRef.current.clientWidth;
     const containerHeight = containerRef.current.clientHeight;
-    
+
     const targetRatio = 2 / 3;
     let cardWidth: number;
     let cardHeight: number;
-    
+
     const widthBasedHeight = containerWidth / targetRatio;
-    
+
     if (widthBasedHeight <= containerHeight) {
       cardWidth = containerWidth;
       cardHeight = widthBasedHeight;
@@ -79,23 +79,23 @@ export function ForgeCard({
       cardHeight = containerHeight;
       cardWidth = containerHeight * targetRatio;
     }
-    
+
     setCardSize({ width: Math.floor(cardWidth), height: Math.floor(cardHeight) });
   }, []);
-  
+
   useEffect(() => {
     updateCardSize();
     window.addEventListener('resize', updateCardSize);
     return () => window.removeEventListener('resize', updateCardSize);
   }, [updateCardSize]);
-  
+
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDraft(e.target.value);
   };
-  
+
   const handleSubmit = async () => {
     if (wordCount < TARGET_WORDS || !isToday || isComplete || isSubmitting) return;
-    
+
     setSubmitting(true);
     try {
       await onSubmit(draft);
@@ -109,24 +109,28 @@ export function ForgeCard({
       setSubmitting(false);
     }
   };
-  
+
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.tagName === 'TEXTAREA' || target.closest('.word-counter')) {
       return;
     }
-    toggleFlip();
+
+    // Only allow manual flipping if the entry is complete
+    if (isComplete) {
+      toggleFlip();
+    }
   };
-  
+
   const progress = Math.min(wordCount / TARGET_WORDS, 1);
   const strokeOffset = CIRCUMFERENCE * (1 - progress);
   const isReady = wordCount >= TARGET_WORDS && isToday && !isComplete && !isSubmitting;
   const forgePercent = FORGE_FILL[forgeLevel] || 0;
-  
+
   return (
     <>
       <div className="card-container" ref={containerRef}>
-        <div 
+        <div
           className={`card ${isFlipped ? 'flipped' : ''}`}
           ref={cardRef}
           style={{ width: cardSize.width, height: cardSize.height }}
@@ -139,12 +143,12 @@ export function ForgeCard({
                 {isToday ? "Today's Entry" : `Day Entry`}
               </div>
               <div className="entry-subtitle">
-                {isComplete 
-                  ? 'Entry complete! Tap to view your weapon.' 
+                {isComplete
+                  ? 'Entry complete! Tap to view your weapon.'
                   : 'Write 50 words to forge your weapon'}
               </div>
             </div>
-            
+
             <div className="text-area-wrapper">
               <textarea
                 className="text-area"
@@ -154,9 +158,9 @@ export function ForgeCard({
                 disabled={!isToday || isComplete}
               />
             </div>
-            
+
             <div className="front-footer">
-              <button 
+              <button
                 className={`word-counter ${isReady ? 'ready' : ''}`}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -166,10 +170,10 @@ export function ForgeCard({
               >
                 <svg viewBox="0 0 48 48">
                   <circle className="progress-ring" cx="24" cy="24" r="22" />
-                  <circle 
-                    className="progress-fill" 
-                    cx="24" 
-                    cy="24" 
+                  <circle
+                    className="progress-fill"
+                    cx="24"
+                    cy="24"
                     r="22"
                     style={{ strokeDashoffset: strokeOffset }}
                   />
@@ -180,12 +184,12 @@ export function ForgeCard({
               </button>
             </div>
           </div>
-          
+
           {/* Back Face - Weapon Reveal */}
           <div className="card-face card-back">
-            <img 
-              className="weapon-image" 
-              src={weaponImageUrl} 
+            <img
+              className="weapon-image"
+              src={weaponImageUrl}
               alt={weaponName}
               onError={(e) => {
                 (e.target as HTMLImageElement).src = '/weapons/placeholder.svg';
@@ -198,13 +202,7 @@ export function ForgeCard({
           </div>
         </div>
       </div>
-      
-      <div className="action-area">
-        <div className="flip-hint">
-          <span>👆</span>
-          <span>{isFlipped ? 'Tap to write' : 'Tap card to flip'}</span>
-        </div>
-      </div>
+
     </>
   );
 }

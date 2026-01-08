@@ -227,7 +227,13 @@ export async function getDashboardState() {
   if (!user) return null;
 
   // Calculate position (might be 0 if journey hasn't started)
-  const dayNumber = getCurrentDayNumber(user.journeyStartDate, user.timezone);
+  let dayNumber = getCurrentDayNumber(user.journeyStartDate, user.timezone);
+
+  // FIX: If user hasn't started (day 0), show as Day 1
+  if (dayNumber === 0) {
+    dayNumber = 1;
+  }
+
   const weekNumber = getWeekNumber(dayNumber);
 
   // LAZY FINALIZATION: Check if any previous weeks need to be locked
