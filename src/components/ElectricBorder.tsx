@@ -7,66 +7,76 @@ interface ElectricBorderProps {
     color?: string;
 }
 
-export function ElectricBorder({ forgeLevel, color = '#f59e0b' }: ElectricBorderProps) {
+export function ElectricBorder({ forgeLevel, color = '#dd8448' }: ElectricBorderProps) {
     // No effect at level 0
     if (forgeLevel === 0) return null;
 
     // Scale intensity based on forge level (1-7)
     const intensity = forgeLevel / 7;
 
-    // Memoize all style calculations
+    // Memoize all calculations
     const styles = useMemo(() => ({
-        opacity: 0.3 + (intensity * 0.7),
-        glowSpread: 2 + (intensity * 8),
-        borderOpacity: 0.4 + (intensity * 0.6),
+        borderOpacity: 0.3 + (intensity * 0.7), // 0.3 to 1.0
+        glowOpacity: 0.2 + (intensity * 0.4),   // 0.2 to 0.6
+        bgGlowOpacity: 0.1 + (intensity * 0.2), // 0.1 to 0.3
     }), [intensity]);
 
     return (
         <>
-            {/* Outer Glow (diffuse) */}
+            {/* Border Outer - static subtle border */}
             <div
                 className="absolute inset-0 rounded-[var(--radius-lg)] pointer-events-none"
                 style={{
-                    border: `2px solid ${color}`,
-                    filter: `blur(${styles.glowSpread}px)`,
-                    opacity: styles.opacity * 0.6,
-                    zIndex: 9,
+                    border: `2px solid rgba(221, 132, 72, 0.5)`,
+                    zIndex: 8,
                 }}
             />
 
-            {/* Inner Glow (sharper) */}
-            <div
-                className="absolute inset-0 rounded-[var(--radius-lg)] pointer-events-none"
-                style={{
-                    border: `2px solid ${color}`,
-                    filter: 'blur(1px)',
-                    opacity: styles.opacity * 0.8,
-                    zIndex: 12,
-                }}
-            />
-
-            {/* Electric Border - uses global filter */}
+            {/* Main Electric Card - THIS gets the turbulent filter */}
             <div
                 className="absolute rounded-[var(--radius-lg)] pointer-events-none"
                 style={{
                     inset: '-4px',
                     border: `2px solid ${color}`,
-                    filter: 'url(#electric-turbulence)',
+                    filter: 'url(#turbulent-displace)',
                     opacity: styles.borderOpacity,
+                    zIndex: 9,
+                }}
+            />
+
+            {/* Glow Layer 1 - subtle blur, NO filter */}
+            <div
+                className="absolute inset-0 rounded-[var(--radius-lg)] pointer-events-none"
+                style={{
+                    border: `2px solid rgba(221, 132, 72, 0.6)`,
+                    filter: 'blur(1px)',
+                    opacity: styles.glowOpacity,
+                    zIndex: 10,
+                }}
+            />
+
+            {/* Glow Layer 2 - more blur, NO filter */}
+            <div
+                className="absolute inset-0 rounded-[var(--radius-lg)] pointer-events-none"
+                style={{
+                    border: `2px solid ${color}`,
+                    filter: 'blur(4px)',
+                    opacity: styles.glowOpacity * 0.8,
                     zIndex: 11,
                 }}
             />
 
-            {/* Background Ambient Glow */}
+            {/* Background Glow - ambient light */}
             <div
                 className="absolute pointer-events-none"
                 style={{
-                    inset: '-20px',
-                    filter: `blur(${20 + (intensity * 12)}px)`,
+                    inset: '0',
+                    borderRadius: 'var(--radius-lg)',
+                    filter: 'blur(32px)',
                     transform: 'scale(1.1)',
-                    opacity: intensity * 0.25,
-                    background: `linear-gradient(-30deg, ${color}, transparent, ${color})`,
+                    opacity: styles.bgGlowOpacity,
                     zIndex: -1,
+                    background: `linear-gradient(-30deg, ${color}, transparent, ${color})`,
                 }}
             />
         </>
