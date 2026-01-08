@@ -4,6 +4,9 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useJournalStore } from '@/stores/journal-store';
 import { FORGE_FILL } from '@/lib/calendar';
 
+// Add CSS for animation overlay
+import '../app/globals.css';
+
 interface ForgeCardProps {
   isToday: boolean;
   entryContent: string;
@@ -11,7 +14,7 @@ interface ForgeCardProps {
   weaponImageUrl: string;
   weaponName: string;
   forgeLevel: number;
-  onSubmit: (content: string) => Promise<void>;
+  onSubmit: (content: string) => Promise<string | undefined>; // Return animation URL
   placeholder?: string;
 }
 
@@ -31,6 +34,8 @@ export function ForgeCard({
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [cardSize, setCardSize] = useState({ width: 0, height: 0 });
+  const [animationUrl, setAnimationUrl] = useState<string | null>(null);
+  const [showAnimation, setShowAnimation] = useState(false);
 
   const {
     draft,
@@ -50,14 +55,16 @@ export function ForgeCard({
     }
   }, [entryContent, draft, setDraft]);
 
-  // Auto-flip to back for completed entries
+  // Auto-flip to back for completed entries (only if NOT playing animation)
   useEffect(() => {
+    if (showAnimation) return;
+
     if (isComplete && !isToday) {
       setFlipped(true);
     } else if (isToday && !isComplete) {
       setFlipped(false);
     }
-  }, [isComplete, isToday, setFlipped]);
+  }, [isComplete, isToday, setFlipped, showAnimation]);
 
   // Calculate card size to maintain 2:3 aspect ratio
   const updateCardSize = useCallback(() => {
@@ -98,11 +105,25 @@ export function ForgeCard({
 
     setSubmitting(true);
     try {
-      await onSubmit(draft);
-      // Flip to reveal weapon after successful submission
-      setTimeout(() => {
-        setFlipped(true);
-      }, 200);
+      const animUrl = await onSubmit(draft);
+
+      if (animUrl) {
+        setAnimationUrl(animUrl);
+        setShowAnimation(true);
+
+        // Play animation for 2.5s then flip
+        setTimeout(() => {
+          setShowAnimation(false);
+          setFlipped(true);
+          setAnimationUrl(null);
+        }, 2500);
+      } else {
+        // Fallback if no animation
+        setTimeout(() => {
+          setFlipped(true);
+        }, 200);
+      }
+
     } catch (error) {
       console.error('Failed to submit entry:', error);
     } finally {
@@ -117,7 +138,7 @@ export function ForgeCard({
     }
 
     // Only allow manual flipping if the entry is complete
-    if (isComplete) {
+    if (isComplete && !showAnimation) {
       toggleFlip();
     }
   };
@@ -155,7 +176,7 @@ export function ForgeCard({
                 value={draft}
                 onChange={handleInput}
                 placeholder={placeholder}
-                disabled={!isToday || isComplete}
+                disabled={(!isToday || isComplete) && !showAnimation}
               />
             </div>
 
@@ -201,10 +222,29 @@ export function ForgeCard({
             </div>
           </div>
         </div>
-      </div>
 
+        {/* Animation Overlay */}
+        {showAnimation && animationUrl && (
+          <div
+            className="animation-overlay"
+            style={{
+              width: cardSize.width,
+              height: cardSize.height,
+              position: 'absolute',
+              zIndex: 9999,
+              borderRadius: '24px',
+              overflow: 'hidden',
+              pointerEvents: 'none'
+            }}
+          >
+            <img
+              src={animationUrl}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              alt="Forging..."
+            />
+          </div>
+        )}
+      </div>
     </>
   );
 }
-
-

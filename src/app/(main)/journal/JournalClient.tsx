@@ -69,6 +69,7 @@ export function JournalClient({ initialState }: JournalClientProps) {
       throw new Error(result.message);
     }
     // Page will revalidate automatically
+    return result.forgeAnimation;
   };
 
   const handleSelectDay = (day: number) => {
