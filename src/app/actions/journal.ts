@@ -390,3 +390,89 @@ export async function getUserWeapons() {
     fullImage: getWeaponAssetUrl(w.artifactId, 7),
   }));
 }
+
+// =============================================================================
+// GET DATA FOR A SPECIFIC DAY
+// =============================================================================
+
+export async function getDayData(dayNumber: number) {
+  const supabase = await createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+
+  if (!authUser) return null;
+
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, authUser.id),
+  });
+
+  if (!user) return null;
+
+  const currentDayNumber = getCurrentDayNumber(user.journeyStartDate, user.timezone);
+  const weekNumber = getWeekNumber(dayNumber);
+  const dayInWeek = getDayInWeek(dayNumber);
+
+  // Get the journal entry for this specific day
+  const entry = await db.query.journalEntries.findFirst({
+    where: and(
+      eq(journalEntries.userId, user.id),
+      eq(journalEntries.dayNumber, dayNumber)
+    ),
+  });
+
+  // Get the weapon for this week
+  const weapon = await db.query.userWeapons.findFirst({
+    where: and(
+      eq(userWeapons.userId, user.id),
+      eq(userWeapons.weekNumber, weekNumber)
+    ),
+  });
+
+  if (!weapon) {
+    return {
+      dayNumber,
+      weekNumber,
+      isToday: dayNumber === currentDayNumber,
+      isFuture: dayNumber > currentDayNumber,
+      entry: null,
+      weapon: null,
+      forgeLevel: 0,
+      weaponImageUrl: '',
+    };
+  }
+
+  // Calculate forge level UP TO this specific day
+  // completedDays is [day1, day2, day3, day4, day5, day6, day7]
+  const completedDays = weapon.completedDays as boolean[];
+  let forgeLevelAtDay = 0;
+
+  for (let i = 0; i < dayInWeek; i++) {
+    if (completedDays[i]) {
+      forgeLevelAtDay++;
+    }
+  }
+
+  // If this day was missed but previous days were completed, show the last known level
+  // forgeLevelAtDay already handles this since we only count up to dayInWeek
+
+  const weaponImageUrl = getWeaponAssetUrl(weapon.artifactId, forgeLevelAtDay);
+
+  return {
+    dayNumber,
+    weekNumber,
+    isToday: dayNumber === currentDayNumber,
+    isFuture: dayNumber > currentDayNumber,
+    entry: entry ? {
+      content: entry.content,
+      wordCount: entry.wordCount,
+      isComplete: entry.isComplete || false,
+    } : null,
+    weapon: {
+      artifactId: weapon.artifactId,
+      name: weapon.artifactName,
+      category: weapon.category,
+      rarity: weapon.rarity,
+    },
+    forgeLevel: forgeLevelAtDay,
+    weaponImageUrl,
+  };
+}

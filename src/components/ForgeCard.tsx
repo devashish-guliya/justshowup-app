@@ -17,6 +17,7 @@ interface ForgeCardProps {
   forgeLevel: number;
   onSubmit: (content: string) => Promise<string | undefined>; // Return animation URL
   placeholder?: string;
+  isLoading?: boolean;
 }
 
 const CIRCUMFERENCE = 2 * Math.PI * 22;
@@ -31,6 +32,7 @@ export function ForgeCard({
   forgeLevel,
   onSubmit,
   placeholder = "What's on your mind today?",
+  isLoading = false,
 }: ForgeCardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);

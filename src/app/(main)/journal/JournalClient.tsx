@@ -1,25 +1,25 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { Header } from '@/components/Header';
 import { WeekSlider } from '@/components/WeekSlider';
 import { ForgeCard } from '@/components/ForgeCard';
 import { useJournalStore } from '@/stores/journal-store';
-import { submitJournalEntry } from '@/app/actions/journal';
+import { submitJournalEntry, getDayData } from '@/app/actions/journal';
 
 interface DashboardState {
   user: {
     id: string;
     email: string;
     timezone: string;
-    hasStarted: boolean; // Replaces currentStreak
+    hasStarted: boolean;
     totalEntries: number;
     totalWords: number;
   };
   position: {
     dayNumber: number;
     weekNumber: number;
-    dayInWeek: number; // Renamed from dayOfWeek
+    dayInWeek: number;
     quarterNumber: number;
     weekInQuarter: number;
   };
@@ -36,7 +36,27 @@ interface DashboardState {
     forgeLevel: number;
     completedDays: boolean[];
     currentImage: string;
-  } | null; // Can be null if not started
+  } | null;
+}
+
+interface DayData {
+  dayNumber: number;
+  weekNumber: number;
+  isToday: boolean;
+  isFuture: boolean;
+  entry: {
+    content: string;
+    wordCount: number;
+    isComplete: boolean;
+  } | null;
+  weapon: {
+    artifactId: string;
+    name: string;
+    category: string;
+    rarity: string;
+  } | null;
+  forgeLevel: number;
+  weaponImageUrl: string;
 }
 
 interface JournalClientProps {
@@ -51,36 +71,50 @@ export function JournalClient({ initialState }: JournalClientProps) {
     clearDraft,
   } = useJournalStore();
 
+  const [isPending, startTransition] = useTransition();
+  const [dayData, setDayData] = useState<DayData | null>(null);
+
   // Initialize selected day to current day
   useEffect(() => {
     setSelectedDay(initialState.position.dayNumber);
-    if (initialState.today?.content) {
-      setDraft(initialState.today.content);
-    } else {
-      clearDraft();
-    }
-  }, [initialState, setSelectedDay, setDraft, clearDraft]);
+  }, [initialState.position.dayNumber, setSelectedDay]);
 
-  const isToday = selectedDay === initialState.position.dayNumber;
+  // Fetch day-specific data when selectedDay changes
+  useEffect(() => {
+    if (!selectedDay) return;
+
+    startTransition(async () => {
+      const data = await getDayData(selectedDay);
+      if (data) {
+        setDayData(data);
+        if (data.entry?.content) {
+          setDraft(data.entry.content);
+        } else {
+          clearDraft();
+        }
+      }
+    });
+  }, [selectedDay, setDraft, clearDraft]);
 
   const handleSubmit = async (content: string) => {
     const result = await submitJournalEntry(content);
     if (!result.success) {
       throw new Error(result.message);
     }
-    // Page will revalidate automatically
     return result.forgeAnimation;
   };
 
   const handleSelectDay = (day: number) => {
     setSelectedDay(day);
-    // Reset draft when changing days
-    if (day === initialState.position.dayNumber && initialState.today?.content) {
-      setDraft(initialState.today.content);
-    } else {
-      clearDraft();
-    }
   };
+
+  // Use dayData if available, fallback to initial state for first render
+  const isToday = dayData?.isToday ?? (selectedDay === initialState.position.dayNumber);
+  const entryContent = dayData?.entry?.content ?? initialState.today?.content ?? '';
+  const isComplete = dayData?.entry?.isComplete ?? initialState.today?.isComplete ?? false;
+  const weaponImageUrl = dayData?.weaponImageUrl ?? initialState.weapon?.currentImage ?? '';
+  const weaponName = dayData?.weapon?.name ?? initialState.weapon?.name ?? 'Unknown Artifact';
+  const forgeLevel = dayData?.forgeLevel ?? initialState.weapon?.forgeLevel ?? 0;
 
   return (
     <div className="app">
@@ -98,15 +132,17 @@ export function JournalClient({ initialState }: JournalClientProps) {
 
       <ForgeCard
         isToday={isToday}
-        entryContent={initialState.today?.content || ''}
-        isComplete={initialState.today?.isComplete || false}
-        weaponImageUrl={initialState.weapon?.currentImage || ''}
-        weaponName={initialState.weapon?.name || 'Unknown Artifact'}
-        forgeLevel={initialState.weapon?.forgeLevel || 0}
+        entryContent={entryContent}
+        isComplete={isComplete}
+        weaponImageUrl={weaponImageUrl}
+        weaponName={weaponName}
+        forgeLevel={forgeLevel}
         onSubmit={handleSubmit}
+        isLoading={isPending}
       />
     </div>
   );
 }
+
 
 

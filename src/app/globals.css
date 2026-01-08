@@ -1,32 +1,39 @@
 @import "tailwindcss";
 
 :root {
-  /* Light Theme Colors */
-  --bg-primary: #f5f5f7;
+  /* Refined Warm Palette */
+  --bg-primary: #faf8f5;
+  /* Warm paper */
   --bg-card: #ffffff;
-  --bg-card-back: #1a1a1a;
+  --bg-card-back: #1c1917;
+  /* Warm dark */
   --bg-pill: #2d2d2d;
   --bg-pill-future: #e5e5e5;
 
-  --text-primary: #1a1a1a;
-  --text-secondary: #6b6b6b;
-  --text-muted: #9a9a9a;
-  --text-on-dark: #ffffff;
+  --text-primary: #1c1917;
+  --text-secondary: #57534e;
+  --text-muted: #a8a29e;
+  --text-on-dark: #faf8f5;
 
-  --accent: #ff7a3d;
-  --accent-light: #ffb088;
+  --accent: #ea580c;
+  /* Warm orange */
+  --accent-light: #fed7aa;
+  --success: #16a34a;
+  --error: #dc2626;
 
-  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-card:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
 
   --radius-md: 16px;
-  --radius-lg: 24px;
+  --radius-lg: 20px;
   --radius-full: 9999px;
 
   /* Layout constants */
-  --header-height: 52px;
-  --pills-height: 60px;
-  --app-padding: 16px;
-  --section-gap: 12px;
+  --header-height: 48px;
+  --app-padding: 20px;
+  --section-gap: 16px;
 }
 
 * {
@@ -277,19 +284,16 @@ body::after {
   backface-visibility: hidden;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow:
-    0 20px 40px -8px rgba(0, 0, 0, 0.12),
-    0 0 0 1px rgba(0, 0, 0, 0.03);
-  /* Subtle border */
-  background: #ffffff;
+  box-shadow: var(--shadow-card);
+  background: var(--bg-card);
 }
 
 /* Front Face */
 .card-front {
-  background: linear-gradient(to bottom right, #ffffff, #fafafa);
+  background: linear-gradient(180deg, #ffffff 0%, #fdfcfb 100%);
   display: flex;
   flex-direction: column;
-  padding: 32px 28px;
+  padding: 28px 24px;
 }
 
 .front-header {
