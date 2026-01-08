@@ -51,7 +51,8 @@ body {
 .app {
   width: 100%;
   max-width: 430px;
-  height: 100dvh;
+  min-height: 100dvh;
+  /* Changed to min-height to allow scrolling if needed */
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -59,7 +60,39 @@ body {
   padding-top: max(var(--app-padding), env(safe-area-inset-top));
   padding-bottom: max(var(--app-padding), env(safe-area-inset-bottom));
   gap: var(--section-gap);
+  position: relative;
+  z-index: 1;
 }
+
+/* Texture Overlay (Paper/Rock Effect) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+
+  /* Noise Texture Data URI */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.5'/%3E%3C/svg%3E");
+
+  /* Blend it to look like texture */
+  opacity: 0.08;
+  /* Subtle grain */
+  mix-blend-mode: hard-light;
+}
+
+/* Add a subtle vignette for "Depth" */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.03) 100%);
+}
+
 
 /* Header */
 .header {

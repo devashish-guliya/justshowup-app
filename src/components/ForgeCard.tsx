@@ -215,10 +215,6 @@ export function ForgeCard({
                 (e.target as HTMLImageElement).src = '/weapons/placeholder.svg';
               }}
             />
-            <div className="forge-badge">
-              <span>🔥</span>
-              <span>{forgePercent}% Forged</span>
-            </div>
           </div>
         </div>
 
