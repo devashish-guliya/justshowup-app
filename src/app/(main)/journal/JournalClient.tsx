@@ -12,14 +12,14 @@ interface DashboardState {
     id: string;
     email: string;
     timezone: string;
-    currentStreak: number;
+    hasStarted: boolean; // Replaces currentStreak
     totalEntries: number;
     totalWords: number;
   };
   position: {
     dayNumber: number;
     weekNumber: number;
-    dayOfWeek: number;
+    dayInWeek: number; // Renamed from dayOfWeek
     quarterNumber: number;
     weekInQuarter: number;
   };
@@ -36,7 +36,7 @@ interface DashboardState {
     forgeLevel: number;
     completedDays: boolean[];
     currentImage: string;
-  };
+  } | null; // Can be null if not started
 }
 
 interface JournalClientProps {
@@ -44,13 +44,13 @@ interface JournalClientProps {
 }
 
 export function JournalClient({ initialState }: JournalClientProps) {
-  const { 
-    selectedDay, 
+  const {
+    selectedDay,
     setSelectedDay,
     setDraft,
     clearDraft,
   } = useJournalStore();
-  
+
   // Initialize selected day to current day
   useEffect(() => {
     setSelectedDay(initialState.position.dayNumber);
@@ -60,9 +60,9 @@ export function JournalClient({ initialState }: JournalClientProps) {
       clearDraft();
     }
   }, [initialState, setSelectedDay, setDraft, clearDraft]);
-  
+
   const isToday = selectedDay === initialState.position.dayNumber;
-  
+
   const handleSubmit = async (content: string) => {
     const result = await submitJournalEntry(content);
     if (!result.success) {
@@ -70,7 +70,7 @@ export function JournalClient({ initialState }: JournalClientProps) {
     }
     // Page will revalidate automatically
   };
-  
+
   const handleSelectDay = (day: number) => {
     setSelectedDay(day);
     // Reset draft when changing days
@@ -80,29 +80,29 @@ export function JournalClient({ initialState }: JournalClientProps) {
       clearDraft();
     }
   };
-  
+
   return (
     <div className="app">
-      <Header 
-        dayNumber={initialState.position.dayNumber} 
+      <Header
+        dayNumber={initialState.position.dayNumber}
         maxDays={365}
       />
-      
+
       <WeekSlider
         currentDayNumber={initialState.position.dayNumber}
         weekNumber={initialState.position.weekNumber}
         selectedDay={selectedDay || initialState.position.dayNumber}
-        completedDays={initialState.weapon.completedDays}
+        completedDays={initialState.weapon?.completedDays || []}
         onSelectDay={handleSelectDay}
       />
-      
+
       <ForgeCard
         isToday={isToday}
         entryContent={initialState.today?.content || ''}
         isComplete={initialState.today?.isComplete || false}
-        weaponImageUrl={initialState.weapon.currentImage}
-        weaponName={initialState.weapon.name}
-        forgeLevel={initialState.weapon.forgeLevel}
+        weaponImageUrl={initialState.weapon?.currentImage || ''}
+        weaponName={initialState.weapon?.name || 'Unknown Artifact'}
+        forgeLevel={initialState.weapon?.forgeLevel || 0}
         onSubmit={handleSubmit}
       />
     </div>
