@@ -7,40 +7,41 @@ interface ElectricBorderProps {
     color?: string;
 }
 
-// For now, we use CSS-based glow since we need to generate the video asset
-// Once we have /public/effects/electric-border.webm, we can switch to video
-export function ElectricBorder({ forgeLevel, color = '#dd8448' }: ElectricBorderProps) {
+export function ElectricBorder({ forgeLevel }: ElectricBorderProps) {
     // No effect at level 0
     if (forgeLevel === 0) return null;
 
+    // Scale intensity based on forge level (1-7)
     const intensity = forgeLevel / 7;
 
-    const styles = useMemo(() => ({
-        glowOpacity: 0.3 + (intensity * 0.7),
-        glowSpread: 4 + (intensity * 12),
-        pulseSpeed: 3 - (intensity * 1.5),
-    }), [intensity]);
+    const opacity = useMemo(() => 0.4 + (intensity * 0.6), [intensity]); // 0.4 to 1.0
 
     return (
         <>
-            {/* Animated Glow Border - CSS-based, smooth */}
-            <div
-                className="electric-glow-ring"
+            {/* Pre-rendered Electric Border Video */}
+            <video
+                className="absolute pointer-events-none z-10"
                 style={{
-                    '--glow-color': color,
-                    '--glow-opacity': styles.glowOpacity,
-                    '--glow-spread': `${styles.glowSpread}px`,
-                    '--pulse-speed': `${styles.pulseSpeed}s`,
-                } as React.CSSProperties}
-            />
+                    inset: '-5px',
+                    width: 'calc(100% + 10px)',
+                    height: 'calc(100% + 10px)',
+                    objectFit: 'fill',
+                    opacity: opacity,
+                    mixBlendMode: 'screen',
+                }}
+                autoPlay
+                loop
+                muted
+                playsInline
+            >
+                <source src="/effects/electric-border.webm" type="video/webm" />
+            </video>
 
-            {/* Static inner glow */}
+            {/* Static inner glow for depth */}
             <div
-                className="absolute inset-0 rounded-[var(--radius-lg)] pointer-events-none z-[12]"
+                className="absolute inset-0 rounded-[var(--radius-lg)] pointer-events-none z-[11]"
                 style={{
-                    border: `1px solid ${color}`,
-                    boxShadow: `inset 0 0 20px rgba(221, 132, 72, 0.2)`,
-                    opacity: styles.glowOpacity * 0.5,
+                    boxShadow: `inset 0 0 30px rgba(221, 132, 72, ${intensity * 0.3})`,
                 }}
             />
         </>
