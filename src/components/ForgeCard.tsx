@@ -160,37 +160,23 @@ export function ForgeCard({
         >
           {/* Front Face - Text Entry */}
           <div className="card-face card-front">
-            <div className="front-header text-center mb-4 z-10 relative">
-              <div className="entry-title text-xl font-serif font-medium text-gray-800">
-                {format(new Date(), 'MMM d, yyyy')}
+            <div className="front-header">
+              <div className="entry-title">
+                {isToday ? format(new Date(), 'MMMM d, yyyy') : `Day Entry`}
+              </div>
+              <div className="entry-subtitle">
+                {isComplete ? 'Forge Complete' : 'Your Daily Forge'}
               </div>
             </div>
 
-            <div className="text-area-wrapper z-10 relative flex-1">
+            <div className="text-area-wrapper">
               <textarea
-                className="text-area w-full h-full resize-none bg-transparent border-none outline-none text-lg leading-relaxed no-scrollbar p-2"
+                className="text-area"
                 value={draft}
                 onChange={handleInput}
                 placeholder={placeholder}
                 disabled={(!isToday || isComplete) && !showAnimation}
-                style={{
-                  scrollbarWidth: 'none', // Firefox
-                  msOverflowStyle: 'none', // IE/Edge
-                }}
               />
-            </div>
-
-            {/* Lava Liquid Effect */}
-            <div
-              className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-orange-500 to-orange-400 opacity-30 transition-all duration-500 ease-out"
-              style={{
-                height: `${progress * 100}%`,
-                maxHeight: '100%',
-                pointerEvents: 'none',
-                zIndex: 0
-              }}
-            >
-              <div className="absolute top-0 left-0 right-0 h-4 bg-orange-400 animate-pulse opacity-50 blur-sm transform -translate-y-1/2"></div>
             </div>
 
             <div className="front-footer">

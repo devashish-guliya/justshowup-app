@@ -90,74 +90,75 @@ body {
   color: var(--text-secondary);
 }
 
-/* Ruler Slider */
+/* Floating Week Slider */
 .week-slider {
-  flex: 0 0 80px;
+  flex: 0 0 var(--pills-height);
   display: flex;
+  justify-content: center;
   align-items: center;
-  position: relative;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  /* Hide scrollbar */
-  -ms-overflow-style: none;
-  padding: 0 50%;
-  /* Center the items */
-  mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
+  gap: 12px;
 }
 
-.week-slider::-webkit-scrollbar {
-  display: none;
-}
-
-.ruler-track {
-  display: flex;
-  align-items: flex-end;
-  height: 60px;
-  gap: 24px;
-  padding-bottom: 10px;
-}
-
-.ruler-tick {
+.day-pill {
+  width: 40px;
+  height: 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  opacity: 0.4;
-  transition: all 0.3s ease;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
-  min-width: 30px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  position: relative;
 }
 
-.ruler-tick.selected {
-  opacity: 1;
-  transform: scale(1.2);
+.day-pill:hover {
+  color: var(--text-primary);
+  transform: translateY(-2px);
 }
 
-.ruler-tick.future {
-  opacity: 0.1;
-  pointer-events: none;
+.day-pill.selected {
+  font-weight: 800;
+  color: var(--text-primary);
+  transform: scale(1.1);
 }
 
-.tick-mark {
-  width: 2px;
-  height: 12px;
-  background: var(--text-primary);
-  border-radius: 2px;
-}
-
-.ruler-tick.selected .tick-mark {
-  height: 24px;
+.day-pill.selected::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  width: 6px;
+  height: 6px;
   background: var(--accent);
-  box-shadow: 0 0 10px var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--accent);
 }
 
-.tick-label {
-  font-size: 14px;
-  font-weight: 600;
-  font-family: 'Inter', monospace;
+.day-pill.future {
+  color: var(--text-muted);
+  opacity: 0.5;
+  cursor: default;
 }
 
+.day-pill.future:hover {
+  transform: none;
+}
+
+.day-pill.completed:not(.selected) {
+  color: #22c55e;
+}
+
+.day-pill.completed:not(.selected)::after {
+  content: '✓';
+  font-size: 10px;
+  font-weight: 900;
+  position: absolute;
+  bottom: 8px;
+}
 
 /* Card Container */
 .card-container {
@@ -168,14 +169,16 @@ body {
   justify-content: center;
   min-height: 0;
   perspective: 1200px;
+  padding: 20px;
 }
 
 /* The Card */
 .card {
   position: relative;
   transform-style: preserve-3d;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease, height 0.3s ease;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
   cursor: pointer;
+  border-radius: var(--radius-lg);
 }
 
 .card.flipped {
@@ -188,24 +191,31 @@ body {
   backface-visibility: hidden;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-card);
+  box-shadow:
+    0 20px 40px -8px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(0, 0, 0, 0.03);
+  /* Subtle border */
+  background: #ffffff;
 }
 
 /* Front Face */
 .card-front {
-  background: var(--bg-card);
+  background: linear-gradient(to bottom right, #ffffff, #fafafa);
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: 32px 28px;
 }
 
 .front-header {
   flex: 0 0 auto;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  text-align: center;
 }
 
 .entry-title {
-  font-size: 18px;
+  font-size: 20px;
+  font-family: 'Playfair Display', serif;
+  /* Or system serif if unavailable */
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 4px;
@@ -214,6 +224,8 @@ body {
 .entry-subtitle {
   font-size: 13px;
   color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .text-area-wrapper {
@@ -221,6 +233,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  position: relative;
 }
 
 .text-area {
@@ -230,14 +243,16 @@ body {
   border: none;
   resize: none;
   font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 17px;
+  line-height: 1.7;
   color: var(--text-primary);
   outline: none;
+  padding: 0;
 }
 
 .text-area::placeholder {
-  color: var(--text-muted);
+  color: #c0c0c0;
+  font-style: italic;
 }
 
 .text-area:disabled {
@@ -248,27 +263,29 @@ body {
 .front-footer {
   flex: 0 0 auto;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  /* Centered button looks better with this layout */
   align-items: center;
-  margin-top: 16px;
+  margin-top: 24px;
 }
 
-/* Word Counter */
+/* Word Counter / Forge Button */
 .word-counter {
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
-  background: rgba(0, 0, 0, 0.05);
+  background: #f0f0f0;
   color: var(--text-muted);
   position: relative;
   border: none;
   cursor: default;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Bouncy transition */
 }
 
 .word-counter svg {
@@ -280,14 +297,14 @@ body {
 
 .progress-ring {
   fill: none;
-  stroke: rgba(0, 0, 0, 0.1);
-  stroke-width: 3;
+  stroke: rgba(0, 0, 0, 0.06);
+  stroke-width: 4;
 }
 
 .progress-fill {
   fill: none;
   stroke: var(--accent);
-  stroke-width: 3;
+  stroke-width: 4;
   stroke-linecap: round;
   stroke-dasharray: 138;
   stroke-dashoffset: 138;
