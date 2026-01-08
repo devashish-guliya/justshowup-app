@@ -2,63 +2,43 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { db, users } from '@/db';
+import { eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 
 /**
- * Sign up a new user.
- * Note: Journey does NOT start at signup - it starts at first entry.
- * journey_start_date will be NULL until user makes their first journal entry.
+ * Initiate Google OAuth sign-in.
+ * This redirects the user to Google's consent screen.
  */
-export async function signUp(formData: FormData) {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-  const timezone = formData.get('timezone') as string || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-
+export async function signInWithGoogle() {
   const supabase = await createClient();
+  const headersList = await headers();
+  const origin = headersList.get('origin') || headersList.get('host') || '';
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
+  // Construct the full origin URL
+  const baseUrl = origin.startsWith('http') ? origin : `https://${origin}`;
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${baseUrl}/auth/callback`,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
+    },
   });
 
   if (error) {
+    console.error('Google OAuth error:', error);
     return { error: error.message };
   }
 
-  if (data.user) {
-    // Create user profile
-    // journey_start_date is NULL - will be set on first entry
-    await db.insert(users).values({
-      id: data.user.id,
-      email: data.user.email!,
-      timezone: timezone,
-      // journeyStartDate: null - journey hasn't started yet
-      // signupDate is auto-set to now via defaultNow()
-    });
+  if (data.url) {
+    redirect(data.url);
   }
 
-  redirect('/journal');
-}
-
-/**
- * Sign in an existing user.
- */
-export async function signIn(formData: FormData) {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-
-  const supabase = await createClient();
-
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  redirect('/journal');
+  return { error: 'Failed to get OAuth URL' };
 }
 
 /**
@@ -77,4 +57,20 @@ export async function getUser() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   return user;
+}
+
+/**
+ * Get the current user's profile from our database.
+ */
+export async function getUserProfile() {
+  const supabase = await createClient();
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+
+  if (!authUser) return null;
+
+  const profile = await db.query.users.findFirst({
+    where: eq(users.id, authUser.id),
+  });
+
+  return profile;
 }
