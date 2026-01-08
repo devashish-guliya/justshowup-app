@@ -14,43 +14,60 @@ export function ElectricBorder({ forgeLevel, color = '#f59e0b' }: ElectricBorder
     // Scale intensity based on forge level (1-7)
     const intensity = forgeLevel / 7;
 
-    // Memoize style calculations
+    // Memoize all style calculations
     const styles = useMemo(() => ({
         opacity: 0.3 + (intensity * 0.7),
-        glowSpread: 4 + (intensity * 16),
-        borderOpacity: 0.5 + (intensity * 0.5),
-        pulseSpeed: 3 - (intensity * 1.5), // Faster at higher levels
+        glowSpread: 2 + (intensity * 8),
+        borderOpacity: 0.4 + (intensity * 0.6),
     }), [intensity]);
 
     return (
         <>
-            {/* Animated Glow - uses CSS animation for smooth performance */}
+            {/* Outer Glow (diffuse) */}
             <div
-                className="electric-glow"
+                className="absolute inset-0 rounded-[var(--radius-lg)] pointer-events-none"
                 style={{
-                    '--glow-color': color,
-                    '--glow-opacity': styles.opacity,
-                    '--glow-spread': `${styles.glowSpread}px`,
-                    '--pulse-speed': `${styles.pulseSpeed}s`,
-                } as React.CSSProperties}
+                    border: `2px solid ${color}`,
+                    filter: `blur(${styles.glowSpread}px)`,
+                    opacity: styles.opacity * 0.6,
+                    zIndex: 9,
+                }}
             />
 
-            {/* Static Inner Border */}
+            {/* Inner Glow (sharper) */}
             <div
-                className="electric-border-static"
+                className="absolute inset-0 rounded-[var(--radius-lg)] pointer-events-none"
                 style={{
-                    borderColor: color,
+                    border: `2px solid ${color}`,
+                    filter: 'blur(1px)',
+                    opacity: styles.opacity * 0.8,
+                    zIndex: 12,
+                }}
+            />
+
+            {/* Electric Border - uses global filter */}
+            <div
+                className="absolute rounded-[var(--radius-lg)] pointer-events-none"
+                style={{
+                    inset: '-4px',
+                    border: `2px solid ${color}`,
+                    filter: 'url(#electric-turbulence)',
                     opacity: styles.borderOpacity,
+                    zIndex: 11,
                 }}
             />
 
             {/* Background Ambient Glow */}
             <div
-                className="electric-ambient"
+                className="absolute pointer-events-none"
                 style={{
-                    '--glow-color': color,
-                    '--ambient-opacity': intensity * 0.3,
-                } as React.CSSProperties}
+                    inset: '-20px',
+                    filter: `blur(${20 + (intensity * 12)}px)`,
+                    transform: 'scale(1.1)',
+                    opacity: intensity * 0.25,
+                    background: `linear-gradient(-30deg, ${color}, transparent, ${color})`,
+                    zIndex: -1,
+                }}
             />
         </>
     );
