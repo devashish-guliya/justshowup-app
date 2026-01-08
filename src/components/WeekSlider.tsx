@@ -1,6 +1,4 @@
-'use client';
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface WeekSliderProps {
   currentDayNumber: number;
@@ -16,99 +14,66 @@ export function WeekSlider({
   completedDays,
   onSelectDay
 }: WeekSliderProps) {
-  // Calculate the start of the week containing the selected day
-  // (Day 1-7 = start 1, Day 8-14 = start 8, etc.)
-  const getStartDay = (day: number) => Math.floor((day - 1) / 7) * 7 + 1;
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const [viewStartDay, setViewStartDay] = useState(() => getStartDay(selectedDay));
+  // Total days to show (e.g. up to 365, or just what's relevant)
+  // Let's show up to current week + maybe 1 next week if available
+  const maxDayVisible = Math.ceil(currentDayNumber / 7) * 7;
+  const totalWeeks = Math.ceil(maxDayVisible / 7);
 
-  // Sync view when selectedDay changes externally
+  // Scroll into view whenever selectedDay changes or on mount
   useEffect(() => {
-    setViewStartDay(getStartDay(selectedDay));
+    if (scrollRef.current) {
+      const pageIndex = Math.floor((selectedDay - 1) / 7);
+      const pageWidth = scrollRef.current.clientWidth;
+      scrollRef.current.scrollTo({
+        left: pageIndex * pageWidth,
+        behavior: 'smooth'
+      });
+    }
   }, [selectedDay]);
 
-  const handlePrevWeek = () => {
-    if (viewStartDay > 1) {
-      setViewStartDay(prev => prev - 7);
-    }
-  };
-
-  const handleNextWeek = () => {
-    // Prevent going beyond the current day's week
-    const maxStart = getStartDay(currentDayNumber);
-    if (viewStartDay < maxStart) {
-      setViewStartDay(prev => prev + 7);
-    }
-  };
-
-  // Generate the 7 days for the current view
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const dayNumber = viewStartDay + i;
-    // We need to map the "completed" status correctly.
-    // The completedDays prop is likely just the current week's boolean array from the backend.
-    // If we scroll back in history, we might not have that data readily available in this prop structure 
-    // without a bigger refactor. 
-    // For now, let's just assume we only show completion dots for the *current* view if it aligns, 
-    // or we might need to rely on the backend sending more data. 
-    // However, for the user's specific request about UI, let's fix the navigation first.
-    // Ideally, completedDays should be a map or we query it differently, 
-    // but the user's focus is on the "scrolling sets" UI.
-
-    // Quick fix: If the view matches the "current week", we can maybe use the array?
-    // Actually, looking at JournalClient, it passes `initialState.weapon?.completedDays`.
-    // That array is usually length 7. If we go back in time, that array might not apply.
-    // We will just simplify visuals for now or rely on what's passed.
-
-    return {
-      dayNumber,
-      isSelected: dayNumber === selectedDay,
-      isFuture: dayNumber > currentDayNumber,
-      // Only show completed if it's in the passed array bounds? 
-      // This is a known limitation we might need to address later.
-      isCompleted: false
-    };
-  });
-
   return (
-    <div className="week-slider-container w-full flex items-center justify-between px-4">
-      <button
-        onClick={handlePrevWeek}
-        disabled={viewStartDay <= 1}
-        className={`p-2 rounded-full text-gray-400 hover:text-gray-800 transition-colors ${viewStartDay <= 1 ? 'opacity-0 pointer-events-none' : ''}`}
-        aria-label="Previous Week"
-      >
-        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-6 h-6">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
+    <div className="week-slider-container" ref={scrollRef}>
+      {Array.from({ length: totalWeeks }, (_, weekIdx) => {
+        const weekStartDay = weekIdx * 7 + 1;
 
-      <div className="week-grid flex items-center justify-center gap-2 flex-1">
-        {days.map((day) => (
-          <button
-            key={day.dayNumber}
-            onClick={() => !day.isFuture && onSelectDay(day.dayNumber)}
-            disabled={day.isFuture}
-            className={`
-              day-pill
-              ${day.isSelected ? 'selected' : ''}
-              ${day.isFuture ? 'future' : ''}
-            `}
-          >
-            {day.dayNumber}
-          </button>
-        ))}
-      </div>
+        return (
+          <div key={weekIdx} className="week-page">
+            {Array.from({ length: 7 }, (_, dayIdx) => {
+              const dayNumber = weekStartDay + dayIdx;
+              const isSelected = dayNumber === selectedDay;
+              const isFuture = dayNumber > currentDayNumber;
 
-      <button
-        onClick={handleNextWeek}
-        disabled={viewStartDay >= getStartDay(currentDayNumber)}
-        className={`p-2 rounded-full text-gray-400 hover:text-gray-800 transition-colors ${viewStartDay >= getStartDay(currentDayNumber) ? 'opacity-0 pointer-events-none' : ''}`}
-        aria-label="Next Week"
-      >
-        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-6 h-6">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
+              // Simple check for completion: 
+              // If it's in the CURRENT week, we can use completedDays array.
+              // Otherwise, we'd need history. For now, let's derive it or mark missed.
+              const isCurrentWeek = weekIdx === Math.floor((currentDayNumber - 1) / 7);
+              const isDone = isCurrentWeek ? completedDays[dayIdx] : (dayNumber < currentDayNumber);
+              const isMissed = dayNumber < currentDayNumber && !isDone;
+
+              const classes = [
+                'day-pill',
+                isSelected && 'selected',
+                isFuture && 'future',
+                isDone && !isFuture && 'completed',
+                isMissed && 'missed'
+              ].filter(Boolean).join(' ');
+
+              return (
+                <button
+                  key={dayNumber}
+                  onClick={() => !isFuture && onSelectDay(dayNumber)}
+                  disabled={isFuture}
+                  className={classes}
+                >
+                  {dayNumber}
+                </button>
+              );
+            })}
+          </div>
+        );
+      })}
     </div>
   );
 }
