@@ -91,7 +91,6 @@ export function JournalClient({ initialState }: JournalClientProps) {
 
       <WeekSlider
         currentDayNumber={initialState.position.dayNumber}
-        weekNumber={initialState.position.weekNumber}
         selectedDay={selectedDay || initialState.position.dayNumber}
         completedDays={initialState.weapon?.completedDays || []}
         onSelectDay={handleSelectDay}
