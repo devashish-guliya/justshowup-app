@@ -10,9 +10,8 @@ interface WeekSliderProps {
   onSelectDay: (day: number) => void;
 }
 
-// Compact Item Width
-const ITEM_WIDTH = 50;
-const GAP = 8;
+const ITEM_WIDTH = 44;
+const GAP = 16;
 const SNAP_WIDTH = ITEM_WIDTH + GAP;
 
 export function WeekSlider({
@@ -23,13 +22,10 @@ export function WeekSlider({
 }: WeekSliderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll on selection change
   useEffect(() => {
     if (containerRef.current) {
       const index = selectedDay - 1;
-      const container = containerRef.current;
-
-      container.scrollTo({
+      containerRef.current.scrollTo({
         left: index * SNAP_WIDTH,
         behavior: 'smooth'
       });
@@ -39,21 +35,16 @@ export function WeekSlider({
   const days = Array.from({ length: 365 }, (_, i) => i + 1);
 
   return (
-    <div className="relative w-full h-20 overflow-hidden group mb-4">
-      {/* Fade Masks - Softer/Narrower */}
-      <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-[var(--bg-primary)] to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[var(--bg-primary)] to-transparent z-10 pointer-events-none" />
-
-      {/* Center Indicator (Optional Helper) */}
-      {/* <div className="absolute left-1/2 top-0 bottom-0 w-px bg-red-500/20 -translate-x-1/2 z-0 pointer-events-none" /> */}
+    <div className="relative w-full py-4">
+      {/* Fade edges */}
+      <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
 
       <div
         ref={containerRef}
-        className="w-full h-full overflow-x-auto flex items-center no-scrollbar snap-x snap-mandatory"
+        className="w-full overflow-x-auto flex items-center no-scrollbar snap-x snap-mandatory"
         style={{
-          scrollBehavior: 'smooth',
           gap: GAP,
-          // Precise centering: 50% of container - 50% of item width
           paddingLeft: `calc(50% - ${ITEM_WIDTH / 2}px)`,
           paddingRight: `calc(50% - ${ITEM_WIDTH / 2}px)`,
         }}
@@ -62,25 +53,10 @@ export function WeekSlider({
           const isFuture = day > currentDayNumber;
           const isSelected = day === selectedDay;
 
-          // Status Logic
           const isCurrentWeek = Math.ceil(day / 7) === Math.ceil(currentDayNumber / 7);
           const weekDayIndex = (day - 1) % 7;
-
           const isCompleted = isCurrentWeek ? completedDays[weekDayIndex] : (day < currentDayNumber);
-          // "Missed" if in past and NOT completed.
-          const isMissed = !isFuture && !isCompleted;
-
-          // Color Logic
-          let textColor = "text-gray-400"; // Default / Future
-          if (isCompleted) textColor = "text-emerald-600";
-          else if (isMissed) textColor = "text-red-500";
-          else if (isSelected) textColor = "text-gray-900"; // Current Day (Today) active
-
-          // If selected, maybe drag darker? 
-          // User said: "Selected number should be dark... for done days, number should be green"
-          // So Status Color > Selected Color usually. 
-          // But if Today is selected (and not done yet), it should be dark.
-          if (isSelected && !isCompleted && !isMissed) textColor = "text-gray-900";
+          const isMissed = !isFuture && !isCompleted && day !== currentDayNumber;
 
           return (
             <button
@@ -89,31 +65,45 @@ export function WeekSlider({
               disabled={isFuture}
               className={cn(
                 "relative flex-shrink-0 snap-center flex flex-col items-center justify-center transition-all duration-300",
-                isSelected ? "scale-110 opacity-100" : "scale-100 opacity-50 hover:opacity-80",
+                "w-[44px] h-[60px]",
                 isFuture && "opacity-30 pointer-events-none",
               )}
-              style={{ width: ITEM_WIDTH, height: ITEM_WIDTH }}
             >
+              {/* Selected glow background */}
+              {isSelected && (
+                <div
+                  className="absolute inset-0 rounded-xl -z-10"
+                  style={{
+                    background: 'linear-gradient(135deg, #06b6d4, #f59e0b)',
+                    filter: 'blur(8px)',
+                    opacity: 0.6
+                  }}
+                />
+              )}
+
               {/* Number */}
               <span className={cn(
-                "text-lg font-bold tabular-nums",
-                textColor
+                "text-xl font-bold tabular-nums transition-all",
+                isSelected ? "text-white scale-125" :
+                  isCompleted ? "text-emerald-400" :
+                    isMissed ? "text-red-400/60" :
+                      "text-white/40"
               )}>
                 {day}
               </span>
 
-              {/* Indicators (Absolute positioned below) */}
-              <div className="absolute -bottom-1 flex justify-center items-center h-4">
-                {isCompleted && (
-                  // Green Tick
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-emerald-500 stroke-[3]">
-                    <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+              {/* Indicators */}
+              <div className="h-3 flex items-center justify-center mt-1">
+                {!isSelected && isCompleted && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 )}
-
-                {isMissed && (
-                  // Red Dot
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                {!isSelected && isMissed && (
+                  <div className="w-1 h-1 rounded-full bg-red-400/60" />
+                )}
+                {isSelected && (
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="text-white">
+                    <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 )}
               </div>
             </button>
