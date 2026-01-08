@@ -12,11 +12,26 @@ import { headers } from 'next/headers';
  */
 export async function signInWithGoogle() {
   const supabase = await createClient();
-  const headersList = await headers();
-  const origin = headersList.get('origin') || headersList.get('host') || '';
 
-  // Construct the full origin URL
-  const baseUrl = origin.startsWith('http') ? origin : `https://${origin}`;
+  // Robust URL detection
+  let baseUrl = 'http://localhost:3000';
+
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  } else if (process.env.VERCEL_URL) {
+    // Vercel auto-sets this system var (without protocol)
+    baseUrl = `https://${process.env.VERCEL_URL}`;
+  } else {
+    // Fallback to headers (mostly for local testing if env not set)
+    const headersList = await headers();
+    const origin = headersList.get('origin') || headersList.get('host') || '';
+    if (origin) {
+      baseUrl = origin.startsWith('http') ? origin : `https://${origin}`;
+    }
+  }
+
+  // Ensure no trailing slash
+  baseUrl = baseUrl.replace(/\/$/, '');
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
