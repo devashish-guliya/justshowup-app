@@ -90,75 +90,97 @@ body {
   color: var(--text-secondary);
 }
 
-/* Floating Week Slider */
+/* Neumorphic Week Slider */
 .week-slider {
-  flex: 0 0 var(--pills-height);
+  flex: 0 0 auto;
+  min-height: 80px;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  /* Tighter gap to fit 7 items */
+  padding: 0 4px;
 }
 
 .day-pill {
-  width: 40px;
-  height: 56px;
+  width: 44px;
+  /* Sufficient for "365" */
+  height: 44px;
+  border-radius: 50%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
-  background: transparent;
-  color: var(--text-secondary);
   position: relative;
+  transition: all 0.2s ease;
+
+  /* Neumorphism Base (using bg-primary #f5f5f7) */
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  box-shadow:
+    5px 5px 10px rgba(163, 177, 198, 0.4),
+    -5px -5px 10px rgba(255, 255, 255, 0.8);
 }
 
 .day-pill:hover {
-  color: var(--text-primary);
   transform: translateY(-2px);
+  color: var(--text-primary);
 }
 
 .day-pill.selected {
-  font-weight: 800;
-  color: var(--text-primary);
-  transform: scale(1.1);
-}
-
-.day-pill.selected::after {
-  content: '';
-  position: absolute;
-  bottom: 8px;
-  width: 6px;
-  height: 6px;
-  background: var(--accent);
-  border-radius: 50%;
-  box-shadow: 0 0 12px var(--accent);
+  color: var(--accent);
+  /* Pressed / Inset Effect for active state */
+  box-shadow:
+    inset 4px 4px 8px rgba(163, 177, 198, 0.4),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+  transform: none;
 }
 
 .day-pill.future {
-  color: var(--text-muted);
-  opacity: 0.5;
+  color: #bdc3c7;
   cursor: default;
+  /* Flatter/Subtler shadow for future */
+  box-shadow:
+    2px 2px 4px rgba(163, 177, 198, 0.3),
+    -2px -2px 4px rgba(255, 255, 255, 0.6);
 }
 
 .day-pill.future:hover {
   transform: none;
 }
 
-.day-pill.completed:not(.selected) {
-  color: #22c55e;
+/* Indicators */
+
+/* Completed Tick (Green Dot/Icon) */
+.day-pill.completed:not(.selected)::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  background: #22c55e;
+  border-radius: 50%;
+  border: 2px solid var(--bg-primary);
+  box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.day-pill.completed:not(.selected)::after {
-  content: '✓';
-  font-size: 10px;
-  font-weight: 900;
+/* Selected Dot (Red/Accent) - Optional, maybe just the text color is enough */
+/* But user liked the "dot". Let's put a small dot below the number for selected */
+.day-pill.selected::after {
+  content: '';
   position: absolute;
-  bottom: 8px;
+  bottom: 6px;
+  width: 4px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 50%;
 }
+
 
 /* Card Container */
 .card-container {

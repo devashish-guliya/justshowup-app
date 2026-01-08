@@ -42,7 +42,7 @@ export function WeekSlider({
             onClick={() => !isFuture && onSelectDay(dayNumber)}
             disabled={isFuture}
           >
-            {dayOfWeek}
+            {dayNumber}
           </button>
         );
       })}
