@@ -90,55 +90,46 @@ body {
   color: var(--text-secondary);
 }
 
-/* Fisheye / Focus Week Slider */
-.week-slider {
-  flex: 0 0 100px;
-  /* Taller to accommodate the focus item */
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  padding: 0 30%;
-  /* Large padding to center start/end items */
-  width: 100%;
-  mask-image: linear-gradient(to right, transparent, black 25%, black 75%, transparent);
-  /* Fade edges */
+/* Week Grid Layout */
+.week-slider-container {
+  max-width: 100%;
+  margin-bottom: 24px;
 }
 
-.week-slider.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.week-slider.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.day-pill {
-  flex: 0 0 36px;
-  /* Small default size */
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+/* The Grid itself */
+.week-grid {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+}
+
+/* Day Pill - Base */
+.day-pill {
+  flex: 0 0 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  color: #9ca3af;
+  /* muted */
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
   position: relative;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  border: none;
+  /* Reset button styles */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .day-pill:hover {
   background: rgba(0, 0, 0, 0.03);
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
-/* Focused / Selected State - The "Lens" */
+/* Focused / Selected State */
 .day-pill.selected {
   flex: 0 0 64px;
   /* Big size */
@@ -147,7 +138,7 @@ body {
   font-weight: 800;
   color: var(--text-primary);
 
-  /* Hard Neumorphic Pop */
+  /* Neumorphic Pop */
   background: #f5f5f7;
   box-shadow:
     8px 8px 16px rgba(163, 177, 198, 0.5),
