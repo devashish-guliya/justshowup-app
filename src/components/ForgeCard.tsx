@@ -219,21 +219,6 @@ export function ForgeCard({
 
           {/* Back Face - Weapon Reveal */}
           <div className="card-face card-back">
-            {/* Ambient Light Spill */}
-            <div
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '150%',
-                height: '150%',
-                background: 'radial-gradient(circle, rgba(255, 97, 0, 0.25) 0%, transparent 70%)',
-                filter: 'blur(50px)',
-                zIndex: -1,
-                pointerEvents: 'none',
-              }}
-            />
             <ElectricBorder forgeLevel={forgeLevel} />
             <img
               className="weapon-image"
