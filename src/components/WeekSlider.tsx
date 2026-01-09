@@ -37,8 +37,8 @@ export function WeekSlider({
   return (
     <div className="relative w-full">
       {/* Fade edges */}
-      <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
+      <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black to-transparent z-20 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black to-transparent z-20 pointer-events-none" />
 
       <div
         ref={containerRef}
@@ -88,6 +88,18 @@ export function WeekSlider({
             </button>
           );
         })}
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-4 text-[10px] text-zinc-500 uppercase tracking-wider font-medium">
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)]"></div>
+          <span>Completed</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-red-400/60"></div>
+          <span>Missed</span>
+        </div>
       </div>
 
       {/* Hide webkit scrollbar */}
