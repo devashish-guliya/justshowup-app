@@ -44,12 +44,16 @@ export function ElectricBorder({ forgeLevel }: ElectricBorderProps) {
                     // Inner content 360x540 (2:3), Outer 400x580
                     // To align inner content with card edge:
                     // We need -20px offset on all sides
-                    top: '-20px',
-                    left: '-20px',
-                    right: '-20px',
-                    bottom: '-20px',
-                    width: 'calc(100% + 40px)',
-                    height: 'calc(100% + 40px)',
+                    // The webp is 400x580 with 360x540 inner content
+                    // Width ratio: 400/360 = 1.1111 (111.11%)
+                    // Height ratio: 580/540 = 1.0741 (107.41%)
+                    // This ensures the inner content aligns perfectly with the card edge
+                    width: '111.12%',
+                    height: '107.41%',
+                    left: '-5.56%',
+                    top: '-3.7%',
+                    right: 'auto',
+                    bottom: 'auto',
                     opacity: styles.opacity,
                     filter: styles.filter,
                     objectFit: 'fill',

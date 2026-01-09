@@ -197,13 +197,14 @@ body::after {
   scrollbar-width: none;
   -ms-overflow-style: none;
   margin-bottom: 24px;
+  padding: 20px 0;
+  /* Space for shadows */
 }
 
 .week-slider-container::-webkit-scrollbar {
   display: none;
 }
 
-/* Individual Week Section */
 /* Individual Week Section */
 .week-page {
   min-width: 100%;
