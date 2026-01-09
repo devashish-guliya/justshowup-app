@@ -83,12 +83,12 @@ export function WeekSlider({
               onClick={() => !isFuture && onSelectDay(day)}
               disabled={isFuture}
               className={cn(
-                "relative flex-shrink-0 flex items-center justify-center transition-all duration-200",
+                "day-pill relative flex-shrink-0 flex items-center justify-center transition-all duration-200",
                 "w-10 h-10 rounded-full",
                 "text-sm font-semibold tabular-nums",
                 // Base state
                 !isSelected && !isFuture && "bg-white/5 text-white/50 hover:bg-white/10",
-                // Selected state - defined in globals.css
+                // Selected state - styles handled by .selected class in globals.css
                 isSelected && "selected shadow-[0_0_20px_rgba(255,255,255,0.4)]",
                 // Completed (not selected)
                 !isSelected && isCompleted && "text-emerald-400 bg-emerald-400/10",

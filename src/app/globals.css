@@ -207,14 +207,14 @@ body::after {
 }
 
 /* Week Slider Paging Layout */
-/* Week Slider - 8% height */
+/* Week Slider - 12% height */
 .week-slider-container {
-  height: 8%;
-  flex: 0 0 8%;
+  height: 12%;
+  flex: 0 0 12%;
   width: 100%;
   overflow-x: auto;
-  overflow-y: visible;
-  /* Allow day-pill glows to overflow vertically */
+  overflow-y: hidden;
+  /* Increased height to hold shadows */
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
   display: flex;
@@ -355,10 +355,10 @@ body::after {
 
 
 /* Card Container */
-/* Card Container - 80% height */
+/* Card Container - 75% height */
 .card-container {
-  height: 80%;
-  flex: 0 0 80%;
+  height: 75%;
+  flex: 0 0 75%;
   display: flex;
   flex-direction: column;
   align-items: center;
