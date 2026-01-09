@@ -35,14 +35,14 @@ export function WeekSlider({
   const days = Array.from({ length: 365 }, (_, i) => i + 1);
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full h-full">
       {/* Fade edges */}
       <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black to-transparent z-20 pointer-events-none" />
       <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black to-transparent z-20 pointer-events-none" />
 
       <div
         ref={containerRef}
-        className="w-full overflow-x-auto flex items-center py-6"
+        className="w-full h-full overflow-x-auto flex items-center"
         style={{
           gap: GAP,
           paddingLeft: `calc(50% - ${ITEM_WIDTH / 2}px)`,

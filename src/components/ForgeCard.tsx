@@ -77,18 +77,21 @@ export function ForgeCard({
     const containerWidth = containerRef.current.clientWidth;
     const containerHeight = containerRef.current.clientHeight;
 
+    // Constraint: Height is 100% of container (80vh), Width is max 90% of screen
+    const availableWidth = containerWidth * 0.90;
+    const availableHeight = containerHeight;
     const targetRatio = 2 / 3;
     let cardWidth: number;
     let cardHeight: number;
 
-    const widthBasedHeight = containerWidth / targetRatio;
-
-    if (widthBasedHeight <= containerHeight) {
-      cardWidth = containerWidth;
-      cardHeight = widthBasedHeight;
+    if (availableWidth / availableHeight > targetRatio) {
+      // Space is wider than card ratio -> Constrained by height
+      cardHeight = availableHeight;
+      cardWidth = cardHeight * targetRatio;
     } else {
-      cardHeight = containerHeight;
-      cardWidth = containerHeight * targetRatio;
+      // Space is taller than card ratio -> Constrained by width
+      cardWidth = availableWidth;
+      cardHeight = cardWidth / targetRatio;
     }
 
     setCardSize({ width: Math.floor(cardWidth), height: Math.floor(cardHeight) });
@@ -161,8 +164,6 @@ export function ForgeCard({
           style={{ width: cardSize.width, height: cardSize.height }}
           onClick={handleCardClick}
         >
-          {/* Electric Border Effect */}
-          <ElectricBorder forgeLevel={forgeLevel} />
 
           {/* Front Face - Text Entry */}
           <div className="card-face card-front">
@@ -218,6 +219,7 @@ export function ForgeCard({
 
           {/* Back Face - Weapon Reveal */}
           <div className="card-face card-back">
+            <ElectricBorder forgeLevel={forgeLevel} />
             <img
               className="weapon-image"
               src={weaponImageUrl}
