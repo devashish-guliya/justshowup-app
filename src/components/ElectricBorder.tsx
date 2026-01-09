@@ -66,7 +66,7 @@ export function ElectricBorder({ forgeLevel }: ElectricBorderProps) {
                     opacity: styles.opacity,
                     filter: styles.filter,
                     objectFit: 'fill',
-                    mixBlendMode: 'screen',
+                    // No mixBlendMode - keep original orange color
                 }}
             />
         </>

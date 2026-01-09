@@ -42,7 +42,7 @@ export function WeekSlider({
 
       <div
         ref={containerRef}
-        className="w-full overflow-x-auto flex items-center py-4"
+        className="w-full overflow-x-auto flex items-center py-6"
         style={{
           gap: GAP,
           paddingLeft: `calc(50% - ${ITEM_WIDTH / 2}px)`,
@@ -50,6 +50,7 @@ export function WeekSlider({
           scrollSnapType: 'x mandatory',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
+          overflowY: 'visible', // Don't clip the scaled selected item
         }}
       >
         {days.map((day) => {
