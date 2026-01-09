@@ -50,6 +50,7 @@ export function ElectricBorder({ forgeLevel }: ElectricBorderProps) {
                     // This ensures the inner content aligns perfectly with the card edge
                     width: '111.12%',
                     height: '107.41%',
+                    maxWidth: 'none', // Override global img max-width: 100%
                     left: '-5.56%',
                     top: '-3.7%',
                     right: 'auto',
