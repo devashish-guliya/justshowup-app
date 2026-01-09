@@ -170,7 +170,7 @@ export function ForgeCard({
               <div className="entry-title">
                 {isToday ? format(new Date(), 'MMMM d, yyyy') : `Day Entry`}
               </div>
-              <div className="entry-subtitle">
+              <div className={`entry-subtitle ${isComplete ? 'complete' : ''}`}>
                 {isComplete ? 'Forge Complete' : 'Your Daily Forge'}
               </div>
             </div>
@@ -193,6 +193,8 @@ export function ForgeCard({
                   handleSubmit();
                 }}
                 disabled={!isReady}
+                title={isReady ? 'Click to forge!' : `${wordCount}/50 words`}
+                aria-label={isReady ? 'Submit entry' : `Word count: ${wordCount} of 50`}
               >
                 <svg viewBox="0 0 48 48">
                   <circle className="progress-ring" cx="24" cy="24" r="22" />
@@ -208,6 +210,9 @@ export function ForgeCard({
                   {isReady ? '🔥' : isSubmitting ? <span className="spinner" /> : wordCount}
                 </span>
               </button>
+              <span className={`word-label ${isReady ? 'ready' : ''}`}>
+                {isReady ? 'Forge!' : 'words'}
+              </span>
             </div>
           </div>
 

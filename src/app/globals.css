@@ -401,10 +401,14 @@ body::after {
 
 .entry-subtitle {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+.entry-subtitle.complete {
+  color: var(--success);
 }
 
 .text-area-wrapper {
@@ -427,6 +431,26 @@ body::after {
   color: var(--text-primary);
   outline: none;
   padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* Custom scrollbar for webkit browsers */
+.text-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.text-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.text-area::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.text-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .text-area::placeholder {
@@ -442,10 +466,23 @@ body::after {
 .front-footer {
   flex: 0 0 auto;
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  /* Centered button looks better with this layout */
   align-items: center;
-  margin-top: 24px;
+  margin-top: 16px;
+  gap: 6px;
+}
+
+.word-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+}
+
+.word-label.ready {
+  color: var(--accent);
 }
 
 /* Word Counter / Forge Button */
@@ -808,4 +845,77 @@ body::after {
   font-size: 11px;
   color: white;
   font-weight: 600;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-height: 700px) {
+  .app {
+    padding: 12px;
+    gap: 4px;
+  }
+
+  .card-container {
+    padding: 12px;
+  }
+
+  .card-front {
+    padding: 20px 18px;
+  }
+
+  .front-header {
+    margin-bottom: 16px;
+  }
+
+  .entry-title {
+    font-size: 16px;
+  }
+
+  .front-footer {
+    margin-top: 12px;
+    gap: 4px;
+  }
+
+  .word-counter {
+    width: 52px;
+    height: 52px;
+    font-size: 14px;
+  }
+
+  .word-label {
+    font-size: 9px;
+  }
+}
+
+/* Very small screens */
+@media (max-height: 600px) {
+  .card-front {
+    padding: 16px 14px;
+  }
+
+  .front-header {
+    margin-bottom: 12px;
+  }
+
+  .entry-title {
+    font-size: 14px;
+  }
+
+  .entry-subtitle {
+    font-size: 10px;
+  }
+
+  .text-area {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .front-footer {
+    margin-top: 8px;
+  }
+
+  .word-counter {
+    width: 44px;
+    height: 44px;
+    font-size: 13px;
+  }
 }

@@ -66,7 +66,10 @@ export function ElectricBorder({ forgeLevel }: ElectricBorderProps) {
                     opacity: styles.opacity,
                     filter: styles.filter,
                     objectFit: 'fill',
-                    // No mixBlendMode - keep original orange color
+                    // Smooth rendering to reduce jagged edges
+                    imageRendering: 'auto',
+                    WebkitBackfaceVisibility: 'hidden',
+                    backfaceVisibility: 'hidden',
                 }}
             />
         </>
