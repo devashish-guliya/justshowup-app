@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import Image from 'next/image';
 
 interface ElectricBorderProps {
     forgeLevel: number; // 0-7
@@ -17,30 +16,31 @@ export function ElectricBorder({ forgeLevel }: ElectricBorderProps) {
 
     return (
         <>
-            {/* Pre-rendered Animated WebP with transparent center */}
-            <Image
+            {/* Pre-rendered Animated WebP - 30fps for smooth playback */}
+            {/* Position extends outside card to match the glow overflow */}
+            <img
                 src="/effects/electric-border.webp"
                 alt=""
-                fill
-                className="pointer-events-none z-10 object-fill"
+                className="absolute pointer-events-none z-10"
                 style={{
+                    // The webp was captured with 20px padding on all sides
+                    // So we need to offset by that amount and stretch to fill
+                    top: '-20px',
+                    left: '-20px',
+                    width: 'calc(100% + 40px)',
+                    height: 'calc(100% + 40px)',
                     opacity: opacity,
-                    margin: '-10px',
-                    width: 'calc(100% + 20px)',
-                    height: 'calc(100% + 20px)',
+                    objectFit: 'fill',
                 }}
-                unoptimized // Needed for animated WebP
-                priority
             />
 
             {/* Background ambient glow */}
             <div
                 className="absolute pointer-events-none"
                 style={{
-                    inset: '-20px',
-                    filter: 'blur(32px)',
-                    transform: 'scale(1.1)',
-                    opacity: intensity * 0.2,
+                    inset: '-30px',
+                    filter: 'blur(40px)',
+                    opacity: intensity * 0.25,
                     zIndex: -1,
                     background: 'linear-gradient(-30deg, #dd8448, transparent, #dd8448)',
                 }}
