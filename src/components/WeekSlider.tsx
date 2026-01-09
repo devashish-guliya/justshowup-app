@@ -10,8 +10,8 @@ interface WeekSliderProps {
   onSelectDay: (day: number) => void;
 }
 
-const ITEM_WIDTH = 44;
-const GAP = 16;
+const ITEM_WIDTH = 40;
+const GAP = 8;
 const SNAP_WIDTH = ITEM_WIDTH + GAP;
 
 export function WeekSlider({
@@ -35,18 +35,21 @@ export function WeekSlider({
   const days = Array.from({ length: 365 }, (_, i) => i + 1);
 
   return (
-    <div className="relative w-full py-4">
+    <div className="relative w-full">
       {/* Fade edges */}
-      <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
+      <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
 
       <div
         ref={containerRef}
-        className="w-full overflow-x-auto flex items-center no-scrollbar snap-x snap-mandatory"
+        className="w-full overflow-x-auto flex items-center py-4"
         style={{
           gap: GAP,
           paddingLeft: `calc(50% - ${ITEM_WIDTH / 2}px)`,
           paddingRight: `calc(50% - ${ITEM_WIDTH / 2}px)`,
+          scrollSnapType: 'x mandatory',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}
       >
         {days.map((day) => {
@@ -64,52 +67,34 @@ export function WeekSlider({
               onClick={() => !isFuture && onSelectDay(day)}
               disabled={isFuture}
               className={cn(
-                "relative flex-shrink-0 snap-center flex flex-col items-center justify-center transition-all duration-300",
-                "w-[44px] h-[60px]",
-                isFuture && "opacity-30 pointer-events-none",
+                "relative flex-shrink-0 flex items-center justify-center transition-all duration-200",
+                "w-10 h-10 rounded-full", // Circular
+                "text-sm font-semibold tabular-nums",
+                // Base state
+                !isSelected && !isFuture && "bg-white/5 text-white/50 hover:bg-white/10",
+                // Selected state - glowing white circle
+                isSelected && "bg-white text-black font-bold scale-110 shadow-[0_0_20px_rgba(255,255,255,0.4),0_0_8px_rgba(255,255,255,0.6)]",
+                // Completed (not selected)
+                !isSelected && isCompleted && "text-emerald-400 bg-emerald-400/10",
+                // Missed (not selected)
+                !isSelected && isMissed && "text-red-400/60 bg-red-400/5",
+                // Future state
+                isFuture && "opacity-30 pointer-events-none"
               )}
+              style={{ scrollSnapAlign: 'center' }}
             >
-              {/* Selected glow background */}
-              {isSelected && (
-                <div
-                  className="absolute inset-0 rounded-xl -z-10"
-                  style={{
-                    background: 'linear-gradient(135deg, #06b6d4, #f59e0b)',
-                    filter: 'blur(8px)',
-                    opacity: 0.6
-                  }}
-                />
-              )}
-
-              {/* Number */}
-              <span className={cn(
-                "text-xl font-bold tabular-nums transition-all",
-                isSelected ? "text-white scale-125" :
-                  isCompleted ? "text-emerald-400" :
-                    isMissed ? "text-red-400/60" :
-                      "text-white/40"
-              )}>
-                {day}
-              </span>
-
-              {/* Indicators */}
-              <div className="h-3 flex items-center justify-center mt-1">
-                {!isSelected && isCompleted && (
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                )}
-                {!isSelected && isMissed && (
-                  <div className="w-1 h-1 rounded-full bg-red-400/60" />
-                )}
-                {isSelected && (
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="text-white">
-                    <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </div>
+              {day}
             </button>
           );
         })}
       </div>
+
+      {/* Hide webkit scrollbar */}
+      <style jsx>{`
+        div::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 }
