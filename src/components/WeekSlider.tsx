@@ -34,6 +34,21 @@ export function WeekSlider({
 
   const days = Array.from({ length: 365 }, (_, i) => i + 1);
 
+  // Helper for the tick/check icon
+  const CheckMark = () => (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-3.5 h-3.5"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+
   return (
     <div className="relative w-full h-full">
       {/* Fade edges */}
@@ -69,12 +84,12 @@ export function WeekSlider({
               disabled={isFuture}
               className={cn(
                 "relative flex-shrink-0 flex items-center justify-center transition-all duration-200",
-                "w-10 h-10 rounded-full", // Circular
+                "w-10 h-10 rounded-full",
                 "text-sm font-semibold tabular-nums",
                 // Base state
                 !isSelected && !isFuture && "bg-white/5 text-white/50 hover:bg-white/10",
-                // Selected state - glowing white circle
-                isSelected && "bg-white text-black font-bold scale-110 shadow-[0_0_20px_rgba(255,255,255,0.4),0_0_8px_rgba(255,255,255,0.6)]",
+                // Selected state - defined in globals.css
+                isSelected && "selected shadow-[0_0_20px_rgba(255,255,255,0.4)]",
                 // Completed (not selected)
                 !isSelected && isCompleted && "text-emerald-400 bg-emerald-400/10",
                 // Missed (not selected)
@@ -84,7 +99,14 @@ export function WeekSlider({
               )}
               style={{ scrollSnapAlign: 'center' }}
             >
-              {day}
+              {isSelected ? (
+                <div className="flex flex-col items-center justify-center -space-y-0.5 pointer-events-none">
+                  <span className="text-[14px] leading-tight mt-1">{day}</span>
+                  <CheckMark />
+                </div>
+              ) : (
+                day
+              )}
             </button>
           );
         })}

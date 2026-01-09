@@ -116,7 +116,8 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
-  overflow: hidden;
+  overflow: visible;
+  /* CRITICAL: Allow glows to spill into the browser window */
 }
 
 /* App Container */
@@ -268,18 +269,22 @@ body::after {
   color: var(--text-primary);
 }
 
-/* Selected State - Glowing Circle */
+/* Selected State - Mesh Gradient Pill */
 .day-pill.selected {
-  background: white;
+  background: linear-gradient(135deg, #14b8a6 0%, #4ade80 40%, #fbbf24 70%, #f87171 100%);
   color: black;
   font-weight: 800;
   font-size: 15px;
   box-shadow:
-    0 0 20px rgba(255, 255, 255, 0.4),
-    0 0 8px rgba(255, 255, 255, 0.6);
-  border-radius: 50%;
-  transform: scale(1.15);
+    0 0 25px rgba(74, 222, 128, 0.4),
+    0 0 12px rgba(251, 191, 36, 0.3);
+  border-radius: 12px;
+  /* More of a squircle/rounded rect */
+  transform: scale(1.1);
   z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 /* Future State */
