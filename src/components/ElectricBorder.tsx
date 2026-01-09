@@ -33,6 +33,19 @@ export function ElectricBorder({ forgeLevel }: ElectricBorderProps) {
 
     return (
         <>
+            {/* Ambient glow behind card - matches the electric effect */}
+            <div
+                className="absolute pointer-events-none"
+                style={{
+                    inset: '-40px',
+                    borderRadius: '40px',
+                    background: `radial-gradient(ellipse at center, rgba(221, 132, 72, ${0.15 + intensity * 0.2}) 0%, transparent 70%)`,
+                    filter: `blur(${40 + (intensity * 20)}px)`,
+                    opacity: 0.8 + intensity * 0.2,
+                    zIndex: -1,
+                }}
+            />
+
             {/* Pre-rendered Animated WebP - 20fps for heavy dramatic look */}
             {/* Position extends outside card to match the glow overflow */}
             <img
@@ -40,37 +53,20 @@ export function ElectricBorder({ forgeLevel }: ElectricBorderProps) {
                 alt=""
                 className="absolute pointer-events-none z-10"
                 style={{
-                    // The webp was captured with 20px padding
-                    // Inner content 360x540 (2:3), Outer 400x580
-                    // To align inner content with card edge:
-                    // We need -20px offset on all sides
                     // The webp is 400x580 with 360x540 inner content
                     // Width ratio: 400/360 = 1.1111 (111.11%)
                     // Height ratio: 580/540 = 1.0741 (107.41%)
-                    // This ensures the inner content aligns perfectly with the card edge
                     width: '111.12%',
                     height: '107.41%',
                     maxWidth: 'none', // Override global img max-width: 100%
-                    left: '-5.56%',
-                    top: '-3.7%',
+                    left: '-5.56%', // Center horizontally: (111.12 - 100) / 2 = 5.56
+                    top: '-3.7%',   // Center vertically: (107.41 - 100) / 2 = 3.7
                     right: 'auto',
                     bottom: 'auto',
                     opacity: styles.opacity,
                     filter: styles.filter,
                     objectFit: 'fill',
                     mixBlendMode: 'screen',
-                }}
-            />
-
-            {/* Background ambient glow - intensifies with level */}
-            <div
-                className="absolute pointer-events-none"
-                style={{
-                    inset: '-30px',
-                    filter: `blur(${30 + (intensity * 20)}px)`,
-                    opacity: intensity * 0.3,
-                    zIndex: -1,
-                    background: 'linear-gradient(-30deg, #dd8448, transparent, #dd8448)',
                 }}
             />
         </>

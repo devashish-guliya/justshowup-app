@@ -191,18 +191,22 @@ body::after {
 .week-slider-container {
   width: 100%;
   overflow-x: auto;
+  overflow-y: visible;
+  /* Allow vertical overflow for shadows */
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
   display: flex;
   scrollbar-width: none;
+  /* Firefox */
   -ms-overflow-style: none;
-  margin-bottom: 24px;
-  padding: 20px 0;
-  /* Space for shadows */
+  /* IE */
+  margin-bottom: 16px;
+  padding: 16px 0;
 }
 
 .week-slider-container::-webkit-scrollbar {
   display: none;
+  /* Chrome/Safari */
 }
 
 /* Individual Week Section */
@@ -218,39 +222,44 @@ body::after {
   /* Add vertical padding to prevent clipping of shadows */
 }
 
-/* Day Pill - Minimal Typography */
+/* Day Pill - Circular Buttons */
 .day-pill {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   border: none;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.05);
   color: #94a3b8;
-  /* Slate-400 */
   position: relative;
   transition: all 0.2s ease;
+  border-radius: 50%;
+  /* Circular */
 }
 
 .day-pill:hover {
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
 }
 
-/* Selected State - Neon Pill */
+/* Selected State - Glowing Circle */
 .day-pill.selected {
   background: white;
   color: black;
   font-weight: 800;
+  font-size: 15px;
   box-shadow:
-    0 0 15px rgba(255, 255, 255, 0.3),
-    0 0 5px rgba(255, 255, 255, 0.5);
-  border-radius: 999px;
-  transform: scale(1.1);
+    0 0 20px rgba(255, 255, 255, 0.4),
+    0 0 8px rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  transform: scale(1.15);
+  z-index: 10;
 }
 
 /* Future State */
@@ -329,7 +338,9 @@ body::after {
   justify-content: center;
   min-height: 0;
   perspective: 1200px;
-  padding: 20px;
+  padding: 40px;
+  /* Increased for glow overflow */
+  overflow: visible;
 }
 
 /* The Card */
@@ -339,6 +350,8 @@ body::after {
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
   cursor: pointer;
   border-radius: var(--radius-lg);
+  overflow: visible;
+  /* Allow electric border to extend outside */
 }
 
 .card.flipped {
