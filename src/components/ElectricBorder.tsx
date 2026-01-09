@@ -12,35 +12,58 @@ export function ElectricBorder({ forgeLevel }: ElectricBorderProps) {
 
     // Scale intensity based on forge level (1-7)
     const intensity = forgeLevel / 7;
-    const opacity = useMemo(() => 0.5 + (intensity * 0.5), [intensity]); // 0.5 to 1.0
+
+    // Calculate dynamic styles based on forge level
+    const styles = useMemo(() => {
+        // Base opacity
+        const opacity = 0.5 + (intensity * 0.5);
+
+        // Brightness increases with level
+        const brightness = 0.8 + (intensity * 0.7); // 0.8 to 1.5
+
+        // Drop shadow glow - stronger at higher levels
+        const glowBlur = 10 + (intensity * 20); // 10px to 30px
+        const glowOpacity = 0.3 + (intensity * 0.4); // 0.3 to 0.7
+
+        return {
+            opacity,
+            filter: `brightness(${brightness}) drop-shadow(0 0 ${glowBlur}px rgba(221, 132, 72, ${glowOpacity}))`,
+        };
+    }, [intensity]);
 
     return (
         <>
-            {/* Pre-rendered Animated WebP - 30fps for smooth playback */}
+            {/* Pre-rendered Animated WebP - 20fps for heavy dramatic look */}
             {/* Position extends outside card to match the glow overflow */}
             <img
                 src="/effects/electric-border.webp"
                 alt=""
                 className="absolute pointer-events-none z-10"
                 style={{
-                    // The webp was captured with 20px padding on all sides
-                    // So we need to offset by that amount and stretch to fill
+                    // The webp was captured with 20px padding
+                    // Inner content 360x540 (2:3), Outer 400x580
+                    // To align inner content with card edge:
+                    // We need -20px offset on all sides
                     top: '-20px',
                     left: '-20px',
+                    right: '-20px',
+                    bottom: '-20px',
                     width: 'calc(100% + 40px)',
                     height: 'calc(100% + 40px)',
-                    opacity: opacity,
+                    opacity: styles.opacity,
+                    filter: styles.filter,
                     objectFit: 'fill',
+                    mixBlendMode: 'screen',
                 }}
             />
 
-            {/* Background ambient glow */}
+            {/* Background ambient glow - intensifies with level */}
             <div
                 className="absolute pointer-events-none"
                 style={{
                     inset: '-30px',
-                    filter: 'blur(40px)',
-                    opacity: intensity * 0.25,
+                    filter: `blur(${30 + (intensity * 20)}px)`,
+                    opacity: intensity * 0.3,
                     zIndex: -1,
                     background: 'linear-gradient(-30deg, #dd8448, transparent, #dd8448)',
                 }}

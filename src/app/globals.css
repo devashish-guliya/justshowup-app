@@ -152,40 +152,39 @@ body::after {
 }
 
 
-/* Header - Centered Gymshark Style */
+/* Header - Split Layout */
 .header {
-  flex: 0 0 var(--header-height);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  flex: 0 0 auto;
+  width: 100%;
+  margin-bottom: 24px;
 }
 
-.header-content {
+.header-split {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  gap: 4px;
+  width: 100%;
 }
 
-.header-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 2px;
+.header-brand {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--text-primary);
   text-transform: uppercase;
-  color: var(--text-muted);
 }
 
 .header-day {
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -1px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
   color: var(--text-primary);
+  text-transform: uppercase;
 }
 
 .header-max {
-  font-weight: 400;
   color: var(--text-muted);
-  margin-left: 4px;
+  font-weight: 400;
 }
 
 /* Week Slider Paging Layout */
@@ -205,14 +204,17 @@ body::after {
 }
 
 /* Individual Week Section */
+/* Individual Week Section */
 .week-page {
   min-width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
+  /* Reduced gap slightly */
   scroll-snap-align: center;
-  padding: 10px 0;
+  padding: 20px 0;
+  /* Add vertical padding to prevent clipping of shadows */
 }
 
 /* Day Pill - Minimal Typography */
@@ -238,10 +240,16 @@ body::after {
   color: var(--text-primary);
 }
 
-/* Selected State - Bold and Primary */
+/* Selected State - Neon Pill */
 .day-pill.selected {
+  background: white;
+  color: black;
   font-weight: 800;
-  color: var(--text-primary);
+  box-shadow:
+    0 0 15px rgba(255, 255, 255, 0.3),
+    0 0 5px rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+  transform: scale(1.1);
 }
 
 /* Future State */
