@@ -59,8 +59,10 @@ export function ElectricBorder({ forgeLevel }: ElectricBorderProps) {
                     width: '111.12%',
                     height: '107.41%',
                     maxWidth: 'none', // Override global img max-width: 100%
-                    left: '-5.56%', // Center horizontally: (111.12 - 100) / 2 = 5.56
-                    top: '-3.7%',   // Center vertically: (107.41 - 100) / 2 = 3.7
+                    // Shifted more towards top-left to align current effect with card edges
+                    // The WebP has asymmetric current - closer to top-left, further from bottom-right
+                    left: '-6.5%',  // Was -5.56%, shifted ~1% more left
+                    top: '-4.5%',   // Was -3.7%, shifted ~0.8% more up
                     right: 'auto',
                     bottom: 'auto',
                     opacity: styles.opacity,
