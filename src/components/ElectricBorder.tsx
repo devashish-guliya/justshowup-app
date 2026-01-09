@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import Image from 'next/image';
 
 interface ElectricBorderProps {
     forgeLevel: number; // 0-7
@@ -12,55 +13,27 @@ export function ElectricBorder({ forgeLevel }: ElectricBorderProps) {
 
     // Scale intensity based on forge level (1-7)
     const intensity = forgeLevel / 7;
-
-    const opacity = useMemo(() => 0.4 + (intensity * 0.6), [intensity]); // 0.4 to 1.0
+    const opacity = useMemo(() => 0.5 + (intensity * 0.5), [intensity]); // 0.5 to 1.0
 
     return (
         <>
-            {/* Border Outer - subtle static border */}
-            <div
-                className="absolute inset-0 rounded-[var(--radius-lg)] pointer-events-none"
+            {/* Pre-rendered Animated WebP with transparent center */}
+            <Image
+                src="/effects/electric-border.webp"
+                alt=""
+                fill
+                className="pointer-events-none z-10 object-fill"
                 style={{
-                    border: '2px solid rgba(255, 255, 255, 0.1)',
-                    zIndex: 10,
-                }}
-            />
-
-            {/* Electric Border - EXTENDS OUTSIDE card, gets turbulent filter */}
-            <div
-                className="absolute rounded-[var(--radius-lg)] pointer-events-none"
-                style={{
-                    inset: '-4px',
-                    border: '2px solid #dd8448',
-                    filter: 'url(#turbulent-displace)',
                     opacity: opacity,
-                    zIndex: 11,
+                    margin: '-10px',
+                    width: 'calc(100% + 20px)',
+                    height: 'calc(100% + 20px)',
                 }}
+                unoptimized // Needed for animated WebP
+                priority
             />
 
-            {/* Glow Layer 1 - sharp glow */}
-            <div
-                className="absolute inset-0 rounded-[var(--radius-lg)] pointer-events-none"
-                style={{
-                    border: '2px solid #dd8448',
-                    filter: 'blur(1px)',
-                    opacity: opacity * 0.6,
-                    zIndex: 12,
-                }}
-            />
-
-            {/* Glow Layer 2 - diffuse glow */}
-            <div
-                className="absolute inset-0 rounded-[var(--radius-lg)] pointer-events-none"
-                style={{
-                    border: '2px solid #dd8448',
-                    filter: 'blur(8px)',
-                    opacity: opacity * 0.8,
-                    zIndex: 9,
-                }}
-            />
-
-            {/* Background Glow - ambient light behind card */}
+            {/* Background ambient glow */}
             <div
                 className="absolute pointer-events-none"
                 style={{
