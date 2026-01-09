@@ -130,6 +130,8 @@ export function JournalClient({ initialState }: JournalClientProps) {
         onSelectDay={handleSelectDay}
       />
 
+      <div className="spacer-2" />
+
       <ForgeCard
         isToday={isToday}
         entryContent={entryContent}
