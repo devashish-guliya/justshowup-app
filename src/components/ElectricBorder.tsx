@@ -11,10 +11,10 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
     // No effect at level 0
     if (forgeLevel === 0) return null;
 
-    // Scale intensity based on forge level (1-7)
-    const intensity = forgeLevel / 7;
-    const opacity = 0.5 + (intensity * 0.5);
-    const brightness = 0.8 + (intensity * 0.7);
+    // Constant style - no intensity scaling
+    // The black border acts as a constant mask
+    const opacity = 1.0;
+    const brightness = 1.0;
 
     return (
         <img
