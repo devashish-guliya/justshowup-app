@@ -222,11 +222,7 @@ export function ForgeCard({
 
           {/* Back Face - Weapon Reveal */}
           <div className="card-face card-back">
-            {/* SVG Filter Definition */}
-            <WavyCardFilter />
-
-            {/* Temporarily disabled for testing wavy card effect */}
-            {/* <ElectricBorder forgeLevel={forgeLevel} artifactId={artifactId} /> */}
+            <ElectricBorder forgeLevel={forgeLevel} artifactId={artifactId} />
             <img
               className="weapon-image"
               src={weaponImageUrl}
@@ -234,7 +230,6 @@ export function ForgeCard({
               style={{
                 position: 'relative',
                 zIndex: 10,
-                filter: forgeLevel > 0 ? 'url(#wavy-card-filter)' : 'none',
               }}
               onError={(e) => {
                 (e.target as HTMLImageElement).src = '/weapons/placeholder.svg';
