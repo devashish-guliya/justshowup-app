@@ -51,9 +51,7 @@ export function WeekSlider({
 
   return (
     <div className="relative w-full h-full">
-      {/* Fade edges */}
-      <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black to-transparent z-20 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black to-transparent z-20 pointer-events-none" />
+      {/* Fade edges removed - they created visible dark bar */}
 
       <div
         ref={containerRef}
