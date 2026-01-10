@@ -410,10 +410,10 @@ body::after {
 }
 
 .card-back {
-  background: transparent;
+  background: transparent !important;
   transform: rotateY(180deg);
   overflow: visible;
-  /* Show electric border and glow outside */
+  /* Glow sits behind this transparent layer */
 }
 
 .weapon-image {

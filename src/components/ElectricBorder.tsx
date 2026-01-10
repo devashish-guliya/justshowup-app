@@ -58,13 +58,13 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
         const brightness = 0.8 + (intensity * 0.7); // 0.8 to 1.5
 
         // Glow intensity scales with forge level
-        const glowSize = 20 + (intensity * 40); // 20px to 60px
+        const glowSpread = 20 + (intensity * 40); // 20px to 60px
         const glowOpacity = 0.3 + (intensity * 0.4); // 0.3 to 0.7
 
         return {
             opacity,
             filter: `brightness(${brightness})`,
-            glowSize,
+            glowSpread,
             glowOpacity,
         };
     }, [intensity]);
@@ -75,12 +75,12 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
             <div
                 className="absolute pointer-events-none"
                 style={{
-                    inset: `-${styles.glowSize}px`,
-                    borderRadius: '40px',
+                    inset: 0, // Match card edge exactly
+                    borderRadius: '20px', // Match card radius precisely
                     boxShadow: `
-                        0 0 ${styles.glowSize}px ${fireColor}${Math.round(styles.glowOpacity * 255).toString(16).padStart(2, '0')},
-                        0 0 ${styles.glowSize * 2}px ${fireColor}${Math.round(styles.glowOpacity * 0.5 * 255).toString(16).padStart(2, '0')},
-                        0 0 ${styles.glowSize * 3}px ${fireColor}${Math.round(styles.glowOpacity * 0.25 * 255).toString(16).padStart(2, '0')}
+                        0 0 ${styles.glowSpread}px ${fireColor}${Math.round(styles.glowOpacity * 255).toString(16).padStart(2, '0')},
+                        0 0 ${styles.glowSpread * 2}px ${fireColor}${Math.round(styles.glowOpacity * 0.5 * 255).toString(16).padStart(2, '0')},
+                        0 0 ${styles.glowSpread * 3}px ${fireColor}${Math.round(styles.glowOpacity * 0.25 * 255).toString(16).padStart(2, '0')}
                     `,
                     zIndex: -1,
                     animation: `emberPulse ${2 - intensity}s ease-in-out infinite alternate`,
