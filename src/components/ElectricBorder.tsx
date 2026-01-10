@@ -100,13 +100,16 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
             />
 
             {/* Colored Glow - ON TOP of everything (z-index: 11)
-                This is just box-shadow with transparent background.
-                It adds ambient light without blocking the border! */}
+                Positioned to match the border WebP so the glow follows the wavy edge! */}
             <div
                 className="absolute pointer-events-none"
                 style={{
-                    inset: 0, // Match card edge exactly
-                    borderRadius: '20px', // Match card radius precisely
+                    // Same positioning as the border WebP
+                    width: '111.111%',
+                    height: '107.407%',
+                    left: '-5.555%',
+                    top: '-3.703%',
+                    borderRadius: '24px', // Match border's radius
                     background: 'transparent', // Crucial: no background!
                     boxShadow: `
                         0 0 ${styles.glowSpread}px ${fireColor}${Math.round(styles.glowOpacity * 255).toString(16).padStart(2, '0')},
