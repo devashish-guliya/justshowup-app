@@ -98,28 +98,7 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
                     zIndex: 10, // ON TOP of weapon image
                 }}
             />
-
-            {/* Colored Glow - ON TOP of everything (z-index: 11)
-                Positioned to match the border WebP so the glow follows the wavy edge! */}
-            <div
-                className="absolute pointer-events-none"
-                style={{
-                    // Same positioning as the border WebP
-                    width: '111.111%',
-                    height: '107.407%',
-                    left: '-5.555%',
-                    top: '-3.703%',
-                    borderRadius: '24px', // Match border's radius
-                    background: 'transparent', // Crucial: no background!
-                    boxShadow: `
-                        0 0 ${styles.glowSpread}px ${fireColor}${Math.round(styles.glowOpacity * 255).toString(16).padStart(2, '0')},
-                        0 0 ${styles.glowSpread * 2}px ${fireColor}${Math.round(styles.glowOpacity * 0.5 * 255).toString(16).padStart(2, '0')},
-                        0 0 ${styles.glowSpread * 3}px ${fireColor}${Math.round(styles.glowOpacity * 0.25 * 255).toString(16).padStart(2, '0')}
-                    `,
-                    zIndex: 11, // ON TOP of the black border
-                    animation: `emberPulse ${2 - intensity}s ease-in-out infinite alternate`,
-                }}
-            />
+            {/* Glow temporarily removed - it reveals the black border */}
         </>
     );
 }
