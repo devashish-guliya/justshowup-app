@@ -4,9 +4,9 @@ import { useMemo } from 'react';
 
 // Fire colors matched to each artifact (same as PROMPTS_Q1.json)
 const FIRE_COLORS: Record<string, string> = {
-    '001': '#ff6b00', // Iron Wayfarer - Vibrant Orange
-    '002': '#00e5ff', // River Guide - Electric Cyan
-    '003': '#00bfff', // Wind's Reach - Bright Sky Blue
+    '001': '#686673', // Iron Wayfarer - Grey Slate
+    '002': '#f8f4ea', // River Guide - Warm White/Parchment
+    '003': '#0c1522', // Wind's Reach - Midnight Blue
     '004': '#ffd700', // Sun Ward - Pure Gold
     '005': '#76ff03', // Forest Path - Neon Lime
     '006': '#7b8cde', // Night Watch - Silver Blue
