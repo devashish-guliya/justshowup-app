@@ -89,14 +89,7 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
                     left: '-5.555%',
                     top: '-3.703%',
                     opacity: styles.opacity,
-                    // Drop-shadow follows the wavy shape of the border!
-                    // Multiple shadows create layered glow effect
-                    filter: `
-                        ${styles.filter}
-                        drop-shadow(0 0 ${styles.glowSpread * 0.5}px ${fireColor})
-                        drop-shadow(0 0 ${styles.glowSpread}px ${fireColor})
-                        drop-shadow(0 0 ${styles.glowSpread * 1.5}px ${fireColor})
-                    `,
+                    filter: styles.filter, // Just brightness for now
                     objectFit: 'fill',
                     imageRendering: 'auto',
                     WebkitBackfaceVisibility: 'hidden',
