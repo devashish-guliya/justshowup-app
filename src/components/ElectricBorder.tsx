@@ -45,22 +45,26 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
                 alt=""
                 className="absolute pointer-events-none"
                 style={{
-                    // The webp is 400x580. The card area it covers should be centered.
-                    // We need to match the generation script's offsets.
-                    // Generation: top: -10, left: -10, right: -6, bottom: -6
-                    // This means the border container is slightly wider/taller than the card.
-                    width: 'calc(100% + 16px)', // -10 left + -6 right = 16px extra width
-                    height: 'calc(100% + 16px)', // -10 top + -6 bottom = 16px extra height
+                    // ALIGNMENT MATH:
+                    // Capture Canvas: 400x580
+                    // Card Area in Capture: 360x540 (at 20px,20px)
+                    // Width Ratio: 400/360 = 111.111%
+                    // Height Ratio: 580/540 = 107.407%
+                    // Left Offset: -20/360 = -5.555%
+                    // Top Offset: -20/540 = -3.703%
+
+                    width: '111.111%',
+                    height: '107.407%',
                     maxWidth: 'none',
-                    left: '-10px',
-                    top: '-10px',
+                    left: '-5.555%',
+                    top: '-3.703%',
                     opacity: styles.opacity,
                     filter: styles.filter,
                     objectFit: 'fill',
                     imageRendering: 'auto',
                     WebkitBackfaceVisibility: 'hidden',
                     backfaceVisibility: 'hidden',
-                    zIndex: 1, // Behind the weapon-image but on the card face
+                    zIndex: 1, // Sits behind the weapon-image but on the card face
                 }}
             />
         </>
