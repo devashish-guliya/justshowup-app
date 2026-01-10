@@ -67,10 +67,9 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
 
     return (
         <>
-            {/* Black Wavy Border - ON TOP of card (z-index: 10)
-                This sits above the weapon image and "masks" the straight edges.
-                Since it's black and the page BG is black, it becomes invisible
-                but makes the card's edges appear wavy! */}
+            {/* Black Wavy Border with Drop-Shadow Glow
+                The drop-shadow filter follows the EXACT shape of the WebP,
+                so the glow follows the wavy edge perfectly! */}
             <img
                 src={borderSrc}
                 alt=""
@@ -90,7 +89,14 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
                     left: '-5.555%',
                     top: '-3.703%',
                     opacity: styles.opacity,
-                    filter: styles.filter,
+                    // Drop-shadow follows the wavy shape of the border!
+                    // Multiple shadows create layered glow effect
+                    filter: `
+                        ${styles.filter}
+                        drop-shadow(0 0 ${styles.glowSpread * 0.5}px ${fireColor})
+                        drop-shadow(0 0 ${styles.glowSpread}px ${fireColor})
+                        drop-shadow(0 0 ${styles.glowSpread * 1.5}px ${fireColor})
+                    `,
                     objectFit: 'fill',
                     imageRendering: 'auto',
                     WebkitBackfaceVisibility: 'hidden',
@@ -98,7 +104,6 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
                     zIndex: 10, // ON TOP of weapon image
                 }}
             />
-            {/* Glow temporarily removed - it reveals the black border */}
         </>
     );
 }
