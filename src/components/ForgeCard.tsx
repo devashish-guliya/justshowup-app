@@ -5,6 +5,7 @@ import { useJournalStore } from '@/stores/journal-store';
 import { FORGE_FILL } from '@/lib/calendar';
 import { format } from 'date-fns';
 import { ElectricBorder } from './ElectricBorder';
+import { WavyCardFilter } from './WavyCardFilter';
 
 // Add CSS for animation overlay
 import '../app/globals.css';
@@ -221,12 +222,19 @@ export function ForgeCard({
 
           {/* Back Face - Weapon Reveal */}
           <div className="card-face card-back">
+            {/* SVG Filter Definition */}
+            <WavyCardFilter />
+
             <ElectricBorder forgeLevel={forgeLevel} artifactId={artifactId} />
             <img
               className="weapon-image"
               src={weaponImageUrl}
               alt={weaponName}
-              style={{ position: 'relative', zIndex: 10 }}
+              style={{
+                position: 'relative',
+                zIndex: 10,
+                filter: forgeLevel > 0 ? 'url(#wavy-card-filter)' : 'none',
+              }}
               onError={(e) => {
                 (e.target as HTMLImageElement).src = '/weapons/placeholder.svg';
               }}
