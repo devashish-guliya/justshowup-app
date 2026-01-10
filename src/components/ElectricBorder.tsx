@@ -99,24 +99,26 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
                 }}
             />
 
-            {/* Colored Glow - ON TOP of everything (z-index: 11)
-                Positioned to match the border WebP so the glow follows the wavy edge! */}
+            {/* Colored Glow - Originates from INSIDE the card
+                The glow spreads outward from 10% inside the edges,
+                covering the black border and making everything blend! */}
             <div
                 className="absolute pointer-events-none"
                 style={{
-                    // Same positioning as the border WebP
-                    width: '111.111%',
-                    height: '107.407%',
-                    left: '-5.555%',
-                    top: '-3.703%',
-                    borderRadius: '24px', // Match border's radius
-                    background: 'transparent', // Crucial: no background!
+                    // Start 10% inside the card edges
+                    top: '10%',
+                    left: '10%',
+                    right: '10%',
+                    bottom: '10%',
+                    borderRadius: '16px',
+                    background: 'transparent',
+                    // Larger spread to cover the black border area
                     boxShadow: `
-                        0 0 ${styles.glowSpread}px ${fireColor}${Math.round(styles.glowOpacity * 255).toString(16).padStart(2, '0')},
-                        0 0 ${styles.glowSpread * 2}px ${fireColor}${Math.round(styles.glowOpacity * 0.5 * 255).toString(16).padStart(2, '0')},
-                        0 0 ${styles.glowSpread * 3}px ${fireColor}${Math.round(styles.glowOpacity * 0.25 * 255).toString(16).padStart(2, '0')}
+                        0 0 ${styles.glowSpread * 2}px ${styles.glowSpread}px ${fireColor}${Math.round(styles.glowOpacity * 255).toString(16).padStart(2, '0')},
+                        0 0 ${styles.glowSpread * 3}px ${styles.glowSpread * 1.5}px ${fireColor}${Math.round(styles.glowOpacity * 0.6 * 255).toString(16).padStart(2, '0')},
+                        0 0 ${styles.glowSpread * 4}px ${styles.glowSpread * 2}px ${fireColor}${Math.round(styles.glowOpacity * 0.3 * 255).toString(16).padStart(2, '0')}
                     `,
-                    zIndex: 11, // ON TOP of the black border
+                    zIndex: 11,
                     animation: `emberPulse ${2 - intensity}s ease-in-out infinite alternate`,
                 }}
             />
