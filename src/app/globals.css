@@ -50,6 +50,19 @@
   }
 }
 
+/* Ember Glow Pulse Animation */
+@keyframes emberPulse {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
 @keyframes electric-shimmer {
   0% {
     background-position: -200% 0;
@@ -213,8 +226,8 @@ body::after {
   flex: 0 0 12%;
   width: 100%;
   overflow-x: auto;
-  overflow-y: hidden;
-  /* Increased height to hold shadows */
+  overflow-y: visible;
+  /* Allow glow to extend from card below */
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
   display: flex;

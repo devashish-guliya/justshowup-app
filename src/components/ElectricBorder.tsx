@@ -2,6 +2,23 @@
 
 import { useMemo } from 'react';
 
+// Fire colors matched to each artifact (same as PROMPTS_Q1.json)
+const FIRE_COLORS: Record<string, string> = {
+    '001': '#ff6b00', // Iron Wayfarer - Vibrant Orange
+    '002': '#00e5ff', // River Guide - Electric Cyan
+    '003': '#00bfff', // Wind's Reach - Bright Sky Blue
+    '004': '#ffd700', // Sun Ward - Pure Gold
+    '005': '#76ff03', // Forest Path - Neon Lime
+    '006': '#7b8cde', // Night Watch - Silver Blue
+    '007': '#ff7f6e', // Sky Beam - Coral Pink
+    '008': '#cd8500', // Stone Heart - Bronze
+    '009': '#9b59b6', // Silver Silence - Purple
+    '010': '#5dade2', // Star Map - Ice Blue
+    '011': '#48c9b0', // Tiding Arc - Turquoise
+    '012': '#ffa500', // Eclipse Core - Golden Fire
+    '013': '#e056fd', // Infinite Edge - Cosmic Magenta
+};
+
 interface ElectricBorderProps {
     forgeLevel: number; // 0-7
     artifactId?: string;
@@ -13,6 +30,15 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
 
     // Scale intensity based on forge level (1-7)
     const intensity = forgeLevel / 7;
+
+    // Get the fire color for this artifact
+    const fireColor = useMemo(() => {
+        if (artifactId && artifactId.includes('_')) {
+            const id = artifactId.split('_')[1];
+            return FIRE_COLORS[id] || '#ff6b00';
+        }
+        return '#ff6b00'; // Default orange
+    }, [artifactId]);
 
     // Use specific WebP if artifactId is present (format: artifact_001)
     const borderSrc = useMemo(() => {
@@ -31,14 +57,36 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
         // Brightness increases with level
         const brightness = 0.8 + (intensity * 0.7); // 0.8 to 1.5
 
+        // Glow intensity scales with forge level
+        const glowSize = 20 + (intensity * 40); // 20px to 60px
+        const glowOpacity = 0.3 + (intensity * 0.4); // 0.3 to 0.7
+
         return {
             opacity,
             filter: `brightness(${brightness})`,
+            glowSize,
+            glowOpacity,
         };
     }, [intensity]);
 
     return (
         <>
+            {/* Ember Glow - Pulsing ambient light matching fire color */}
+            <div
+                className="absolute pointer-events-none"
+                style={{
+                    inset: `-${styles.glowSize}px`,
+                    borderRadius: '40px',
+                    boxShadow: `
+                        0 0 ${styles.glowSize}px ${fireColor}${Math.round(styles.glowOpacity * 255).toString(16).padStart(2, '0')},
+                        0 0 ${styles.glowSize * 2}px ${fireColor}${Math.round(styles.glowOpacity * 0.5 * 255).toString(16).padStart(2, '0')},
+                        0 0 ${styles.glowSize * 3}px ${fireColor}${Math.round(styles.glowOpacity * 0.25 * 255).toString(16).padStart(2, '0')}
+                    `,
+                    zIndex: -1,
+                    animation: `emberPulse ${2 - intensity}s ease-in-out infinite alternate`,
+                }}
+            />
+
             {/* Pre-rendered Animated WebP - 90fps for smooth fire fill look */}
             <img
                 src={borderSrc}
