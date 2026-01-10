@@ -40,15 +40,10 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
         return '#ff6b00'; // Default orange
     }, [artifactId]);
 
-    // Use specific WebP if artifactId is present (format: artifact_001)
-    // NOTE: These WebPs should be BLACK to blend with the background
-    const borderSrc = useMemo(() => {
-        if (artifactId && artifactId.includes('_')) {
-            const id = artifactId.split('_')[1];
-            return `/effects/electric-border-${id}.webp`;
-        }
-        return "/effects/electric-border.webp";
-    }, [artifactId]);
+    // Always use the single black border WebP for all weapons
+    // The black blends with the background, making card edges appear wavy
+    // Only the GLOW color changes per weapon
+    const borderSrc = "/effects/electric-border.webp";
 
     // Calculate dynamic styles based on forge level
     const styles = useMemo(() => {
