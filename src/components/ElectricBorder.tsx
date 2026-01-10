@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-// Fire colors matched to each artifact (same as PROMPTS_Q1.json)
+// Fire colors matched to each artifact (for the glow effect)
 const FIRE_COLORS: Record<string, string> = {
     '001': '#686673', // Iron Wayfarer - Grey Slate
     '002': '#f8f4ea', // River Guide - Warm White/Parchment
@@ -31,7 +31,7 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
     // Scale intensity based on forge level (1-7)
     const intensity = forgeLevel / 7;
 
-    // Get the fire color for this artifact
+    // Get the fire color for this artifact (used for glow)
     const fireColor = useMemo(() => {
         if (artifactId && artifactId.includes('_')) {
             const id = artifactId.split('_')[1];
@@ -41,6 +41,7 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
     }, [artifactId]);
 
     // Use specific WebP if artifactId is present (format: artifact_001)
+    // NOTE: These WebPs should be BLACK to blend with the background
     const borderSrc = useMemo(() => {
         if (artifactId && artifactId.includes('_')) {
             const id = artifactId.split('_')[1];
@@ -71,23 +72,10 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
 
     return (
         <>
-            {/* Ember Glow - Pulsing ambient light matching fire color */}
-            <div
-                className="absolute pointer-events-none"
-                style={{
-                    inset: 0, // Match card edge exactly
-                    borderRadius: '20px', // Match card radius precisely
-                    boxShadow: `
-                        0 0 ${styles.glowSpread}px ${fireColor}${Math.round(styles.glowOpacity * 255).toString(16).padStart(2, '0')},
-                        0 0 ${styles.glowSpread * 2}px ${fireColor}${Math.round(styles.glowOpacity * 0.5 * 255).toString(16).padStart(2, '0')},
-                        0 0 ${styles.glowSpread * 3}px ${fireColor}${Math.round(styles.glowOpacity * 0.25 * 255).toString(16).padStart(2, '0')}
-                    `,
-                    zIndex: -1,
-                    animation: `emberPulse ${2 - intensity}s ease-in-out infinite alternate`,
-                }}
-            />
-
-            {/* Pre-rendered Animated WebP - 90fps for smooth fire fill look */}
+            {/* Black Wavy Border - ON TOP of card (z-index: 10)
+                This sits above the weapon image and "masks" the straight edges.
+                Since it's black and the page BG is black, it becomes invisible
+                but makes the card's edges appear wavy! */}
             <img
                 src={borderSrc}
                 alt=""
@@ -112,9 +100,29 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
                     imageRendering: 'auto',
                     WebkitBackfaceVisibility: 'hidden',
                     backfaceVisibility: 'hidden',
-                    zIndex: 1, // Sits behind the weapon-image but on the card face
+                    zIndex: 10, // ON TOP of weapon image
+                }}
+            />
+
+            {/* Colored Glow - ON TOP of everything (z-index: 11)
+                This is just box-shadow with transparent background.
+                It adds ambient light without blocking the border! */}
+            <div
+                className="absolute pointer-events-none"
+                style={{
+                    inset: 0, // Match card edge exactly
+                    borderRadius: '20px', // Match card radius precisely
+                    background: 'transparent', // Crucial: no background!
+                    boxShadow: `
+                        0 0 ${styles.glowSpread}px ${fireColor}${Math.round(styles.glowOpacity * 255).toString(16).padStart(2, '0')},
+                        0 0 ${styles.glowSpread * 2}px ${fireColor}${Math.round(styles.glowOpacity * 0.5 * 255).toString(16).padStart(2, '0')},
+                        0 0 ${styles.glowSpread * 3}px ${fireColor}${Math.round(styles.glowOpacity * 0.25 * 255).toString(16).padStart(2, '0')}
+                    `,
+                    zIndex: 11, // ON TOP of the black border
+                    animation: `emberPulse ${2 - intensity}s ease-in-out infinite alternate`,
                 }}
             />
         </>
     );
 }
+
