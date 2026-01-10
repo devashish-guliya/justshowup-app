@@ -225,7 +225,8 @@ export function ForgeCard({
             {/* SVG Filter Definition */}
             <WavyCardFilter />
 
-            <ElectricBorder forgeLevel={forgeLevel} artifactId={artifactId} />
+            {/* Temporarily disabled for testing wavy card effect */}
+            {/* <ElectricBorder forgeLevel={forgeLevel} artifactId={artifactId} /> */}
             <img
               className="weapon-image"
               src={weaponImageUrl}
