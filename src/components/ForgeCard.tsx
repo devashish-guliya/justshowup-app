@@ -230,13 +230,6 @@ export function ForgeCard({
               style={{
                 position: 'relative',
                 zIndex: 1,
-                // Apply wavy edge mask - makes the card look like torn paper
-                maskImage: 'url(/effects/wavy-mask.png)',
-                maskSize: 'cover',
-                maskPosition: 'center',
-                WebkitMaskImage: 'url(/effects/wavy-mask.png)',
-                WebkitMaskSize: 'cover',
-                WebkitMaskPosition: 'center',
               }}
               onError={(e) => {
                 (e.target as HTMLImageElement).src = '/weapons/placeholder.svg';
