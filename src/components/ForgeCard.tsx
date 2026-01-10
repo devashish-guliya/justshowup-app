@@ -16,6 +16,7 @@ interface ForgeCardProps {
   weaponImageUrl: string;
   weaponName: string;
   forgeLevel: number;
+  artifactId?: string;
   onSubmit: (content: string) => Promise<string | undefined>; // Return animation URL
   placeholder?: string;
   isLoading?: boolean;
@@ -31,6 +32,7 @@ export function ForgeCard({
   weaponImageUrl,
   weaponName,
   forgeLevel,
+  artifactId,
   onSubmit,
   placeholder = "What's on your mind today?",
   isLoading = false,
@@ -219,7 +221,7 @@ export function ForgeCard({
 
           {/* Back Face - Weapon Reveal */}
           <div className="card-face card-back">
-            <ElectricBorder forgeLevel={forgeLevel} />
+            <ElectricBorder forgeLevel={forgeLevel} artifactId={artifactId} />
             <img
               className="weapon-image"
               src={weaponImageUrl}

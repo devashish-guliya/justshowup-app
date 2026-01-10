@@ -139,6 +139,7 @@ export function JournalClient({ initialState }: JournalClientProps) {
         weaponImageUrl={weaponImageUrl}
         weaponName={weaponName}
         forgeLevel={forgeLevel}
+        artifactId={dayData?.weapon?.artifactId}
         onSubmit={handleSubmit}
         isLoading={isPending}
       />

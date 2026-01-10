@@ -4,14 +4,24 @@ import { useMemo } from 'react';
 
 interface ElectricBorderProps {
     forgeLevel: number; // 0-7
+    artifactId?: string;
 }
 
-export function ElectricBorder({ forgeLevel }: ElectricBorderProps) {
+export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) {
     // No effect at level 0
     if (forgeLevel === 0) return null;
 
     // Scale intensity based on forge level (1-7)
     const intensity = forgeLevel / 7;
+
+    // Use specific WebP if artifactId is present (format: artifact_001)
+    const borderSrc = useMemo(() => {
+        if (artifactId && artifactId.includes('_')) {
+            const id = artifactId.split('_')[1];
+            return `/effects/electric-border-${id}.webp`;
+        }
+        return "/effects/electric-border.webp";
+    }, [artifactId]);
 
     // Calculate dynamic styles based on forge level
     const styles = useMemo(() => {
@@ -21,55 +31,36 @@ export function ElectricBorder({ forgeLevel }: ElectricBorderProps) {
         // Brightness increases with level
         const brightness = 0.8 + (intensity * 0.7); // 0.8 to 1.5
 
-        // Drop shadow glow - stronger at higher levels
-        const glowBlur = 10 + (intensity * 20); // 10px to 30px
-        const glowOpacity = 0.3 + (intensity * 0.4); // 0.3 to 0.7
-
         return {
             opacity,
-            filter: `brightness(${brightness}) drop-shadow(0 0 ${glowBlur}px rgba(221, 132, 72, ${glowOpacity}))`,
+            filter: `brightness(${brightness})`,
         };
     }, [intensity]);
 
     return (
         <>
-            {/* Ambient glow behind card - matches the electric effect */}
-            <div
+            {/* Pre-rendered Animated WebP - 90fps for smooth fire fill look */}
+            <img
+                src={borderSrc}
+                alt=""
                 className="absolute pointer-events-none"
                 style={{
-                    inset: '-40px',
-                    borderRadius: '40px',
-                    background: `radial-gradient(ellipse at center, rgba(221, 132, 72, ${0.15 + intensity * 0.2}) 0%, transparent 70%)`,
-                    filter: `blur(${40 + (intensity * 20)}px)`,
-                    opacity: 0.8 + intensity * 0.2,
-                    zIndex: -1,
-                }}
-            />
-
-            {/* Pre-rendered Animated WebP - 20fps for heavy dramatic look */}
-            {/* Position extends outside card to match the glow overflow */}
-            <img
-                src="/effects/electric-border.webp"
-                alt=""
-                className="absolute pointer-events-none z-10"
-                style={{
-                    // The webp is 400x580 with 360x540 inner content
-                    // Width ratio: 400/360 = 1.1111 (111.11%)
-                    // Height ratio: 580/540 = 1.0741 (107.41%)
-                    width: '111.12%',
-                    height: '107.41%',
-                    maxWidth: 'none', // Override global img max-width: 100%
-                    left: '-5.56%', // Center horizontally: (111.12 - 100) / 2 = 5.56
-                    top: '-3.7%',   // Center vertically: (107.41 - 100) / 2 = 3.7
-                    right: 'auto',
-                    bottom: 'auto',
+                    // The webp is 400x580. The card area it covers should be centered.
+                    // We need to match the generation script's offsets.
+                    // Generation: top: -10, left: -10, right: -6, bottom: -6
+                    // This means the border container is slightly wider/taller than the card.
+                    width: 'calc(100% + 16px)', // -10 left + -6 right = 16px extra width
+                    height: 'calc(100% + 16px)', // -10 top + -6 bottom = 16px extra height
+                    maxWidth: 'none',
+                    left: '-10px',
+                    top: '-10px',
                     opacity: styles.opacity,
                     filter: styles.filter,
                     objectFit: 'fill',
-                    // Smooth rendering to reduce jagged edges
                     imageRendering: 'auto',
                     WebkitBackfaceVisibility: 'hidden',
                     backfaceVisibility: 'hidden',
+                    zIndex: 1, // Behind the weapon-image but on the card face
                 }}
             />
         </>
