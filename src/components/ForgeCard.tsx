@@ -224,6 +224,7 @@ export function ForgeCard({
               className="weapon-image"
               src={weaponImageUrl}
               alt={weaponName}
+              style={{ position: 'relative', zIndex: 10 }}
               onError={(e) => {
                 (e.target as HTMLImageElement).src = '/weapons/placeholder.svg';
               }}
