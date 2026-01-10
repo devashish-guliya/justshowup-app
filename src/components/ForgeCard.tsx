@@ -229,7 +229,7 @@ export function ForgeCard({
               alt={weaponName}
               style={{
                 position: 'relative',
-                zIndex: 1,
+                zIndex: 1, // Lower than border so black mask sits on top
               }}
               onError={(e) => {
                 (e.target as HTMLImageElement).src = '/weapons/placeholder.svg';
