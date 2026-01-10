@@ -40,89 +40,29 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
         return '#ff6b00'; // Default orange
     }, [artifactId]);
 
-    // Always use the single black border WebP for all weapons
-    // The black blends with the background, making card edges appear wavy
-    // Only the GLOW color changes per weapon
-    const borderSrc = "/effects/electric-border.webp";
-
     // Calculate dynamic styles based on forge level
-    const styles = useMemo(() => {
-        // Base opacity
-        const opacity = 0.5 + (intensity * 0.5);
-
-        // Brightness increases with level
-        const brightness = 0.8 + (intensity * 0.7); // 0.8 to 1.5
-
-        // Glow intensity scales with forge level
-        const glowSpread = 20 + (intensity * 40); // 20px to 60px
-        const glowOpacity = 0.3 + (intensity * 0.4); // 0.3 to 0.7
-
-        return {
-            opacity,
-            filter: `brightness(${brightness})`,
-            glowSpread,
-            glowOpacity,
-        };
-    }, [intensity]);
+    const glowSpread = 30 + (intensity * 50); // 30px to 80px
+    const glowOpacity = 0.4 + (intensity * 0.4); // 0.4 to 0.8
 
     return (
         <>
-            {/* Black Wavy Border - ON TOP of card (z-index: 10)
-                This sits above the weapon image and "masks" the straight edges.
-                Since it's black and the page BG is black, it becomes invisible
-                but makes the card's edges appear wavy! */}
-            <img
-                src={borderSrc}
-                alt=""
-                className="absolute pointer-events-none"
-                style={{
-                    // ALIGNMENT MATH:
-                    // Capture Canvas: 400x580
-                    // Card Area in Capture: 360x540 (at 20px,20px)
-                    // Width Ratio: 400/360 = 111.111%
-                    // Height Ratio: 580/540 = 107.407%
-                    // Left Offset: -20/360 = -5.555%
-                    // Top Offset: -20/540 = -3.703%
-
-                    width: '111.111%',
-                    height: '107.407%',
-                    maxWidth: 'none',
-                    left: '-5.555%',
-                    top: '-3.703%',
-                    opacity: styles.opacity,
-                    filter: styles.filter,
-                    objectFit: 'fill',
-                    imageRendering: 'auto',
-                    WebkitBackfaceVisibility: 'hidden',
-                    backfaceVisibility: 'hidden',
-                    zIndex: 10, // ON TOP of weapon image
-                }}
-            />
-
-            {/* Colored Glow - Originates from INSIDE the card
-                The glow spreads outward from 10% inside the edges,
-                covering the black border and making everything blend! */}
+            {/* Simple ambient glow behind the card */}
             <div
                 className="absolute pointer-events-none"
                 style={{
-                    // Start 10% inside the card edges
-                    top: '10%',
-                    left: '10%',
-                    right: '10%',
-                    bottom: '10%',
-                    borderRadius: '16px',
+                    inset: 0,
+                    borderRadius: '20px',
                     background: 'transparent',
-                    // Larger spread to cover the black border area
                     boxShadow: `
-                        0 0 ${styles.glowSpread * 2}px ${styles.glowSpread}px ${fireColor}${Math.round(styles.glowOpacity * 255).toString(16).padStart(2, '0')},
-                        0 0 ${styles.glowSpread * 3}px ${styles.glowSpread * 1.5}px ${fireColor}${Math.round(styles.glowOpacity * 0.6 * 255).toString(16).padStart(2, '0')},
-                        0 0 ${styles.glowSpread * 4}px ${styles.glowSpread * 2}px ${fireColor}${Math.round(styles.glowOpacity * 0.3 * 255).toString(16).padStart(2, '0')}
+                        0 0 ${glowSpread}px ${fireColor}${Math.round(glowOpacity * 255).toString(16).padStart(2, '0')},
+                        0 0 ${glowSpread * 2}px ${fireColor}${Math.round(glowOpacity * 0.5 * 255).toString(16).padStart(2, '0')}
                     `,
-                    zIndex: 11,
+                    zIndex: -1,
                     animation: `emberPulse ${2 - intensity}s ease-in-out infinite alternate`,
                 }}
             />
         </>
     );
 }
+
 
