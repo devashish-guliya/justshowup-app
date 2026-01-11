@@ -32,10 +32,10 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
     const intensity = forgeLevel / 7;
 
     // Get the fire color for this artifact
-    const fireColor = '#ffffff'; // Pure White electric current
+    const fireColor = '#ff5500'; // Orange electric current
 
     // Universal border for all weapons
-    const borderSrc = "/effects/electric-border-001.webp";
+    const borderSrc = "/effects/electric-border-orange.webp";
 
     // Calculate dynamic styles based on forge level
     const styles = useMemo(() => {
