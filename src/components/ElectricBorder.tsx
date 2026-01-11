@@ -95,7 +95,7 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
                 <img
                     src={borderSrc}
                     alt=""
-                    className="w-full h-full object-fill transition-all duration-300 ease-out scale-[0.96] group-hover:scale-[1.02]"
+                    className="w-full h-full object-fill transition-all duration-300 ease-out scale-[0.90] group-hover:scale-[1.02]"
                     style={{
                         // MAX BRIGHTNESS SETTINGS
                         opacity: 1,

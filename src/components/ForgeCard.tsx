@@ -196,7 +196,11 @@ export function ForgeCard({
           style={{
             width: cardSize.width,
             height: cardSize.height,
-            transform: `rotateX(${isFlipped ? 180 : rotate.x}deg) rotateY(${isFlipped ? 0 : rotate.y}deg)`,
+            // FIX: Flip should be on Y axis (180deg), Tilt is added to it.
+            // When flipped, we might want to disable tilt or inverse it?
+            // Simple approach: isFlipped -> rotateY(180), else rotateY(mouseY)
+            // Actually, let's keep tilt active but offset by 180 if flipped
+            transform: `rotateX(${rotate.x}deg) rotateY(${isFlipped ? 180 + rotate.y : rotate.y}deg)`,
             transition: 'transform 0.1s ease-out, width 0.3s, height 0.3s',
             transformStyle: 'preserve-3d', // Allow children to have their own depth
           }}
