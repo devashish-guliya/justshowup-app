@@ -181,6 +181,26 @@ export function ForgeCard({
     setRotate({ x: 0, y: 0 });
   };
 
+  // Touch event handlers for mobile
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!cardRef.current || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const rotateX = ((y - centerY) / centerY) * -10;
+    const rotateY = ((x - centerX) / centerX) * 10;
+
+    setRotate({ x: rotateX, y: rotateY });
+  };
+
+  const handleTouchEnd = () => {
+    setRotate({ x: 0, y: 0 });
+  };
+
   return (
     <>
       <div
@@ -189,6 +209,8 @@ export function ForgeCard({
         style={{ perspective: '1000px' }} // enable 3D space
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         <div
           className={`card ${isFlipped ? 'flipped' : ''}`}
