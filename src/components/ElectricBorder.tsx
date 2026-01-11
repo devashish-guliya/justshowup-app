@@ -32,40 +32,80 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
     const intensity = forgeLevel / 7;
 
     // Get the fire color for this artifact
-    const fireColor = useMemo(() => {
-        if (artifactId && artifactId.includes('_')) {
-            const id = artifactId.split('_')[1];
-            return FIRE_COLORS[id] || '#ff6b00';
-        }
-        return '#ff6b00'; // Default orange
-    }, [artifactId]);
+    // Universal White Glow
+    const fireColor = '#FFFFFF';
+
+    // Universal White Border for all weapons
+    // We reuse the '001' file which was generated as Pure White
+    const borderSrc = "/effects/electric-border-001.webp";
 
     // Calculate dynamic styles based on forge level
     const styles = useMemo(() => {
+        // Base opacity
+        const opacity = 0.5 + (intensity * 0.5);
+
+        // Brightness increases with level
+        const brightness = 0.8 + (intensity * 0.7); // 0.8 to 1.5
+
         // Glow intensity scales with forge level
-        const glowSpread = 15 + (intensity * 35); // 15px to 50px
-        const glowOpacity = 0.4 + (intensity * 0.5); // 0.4 to 0.9
+        const glowSpread = 20 + (intensity * 40); // 20px to 60px
+        const glowOpacity = 0.3 + (intensity * 0.4); // 0.3 to 0.7
 
         return {
+            opacity,
+            filter: `brightness(${brightness})`,
             glowSpread,
             glowOpacity,
         };
     }, [intensity]);
 
     return (
-        <div
-            className="absolute pointer-events-none"
-            style={{
-                inset: 0,
-                borderRadius: 'inherit', // Match parent card radius
-                zIndex: 10, // Sits on top of weapon image edges
-                boxShadow: `
-                    inset 0 0 ${styles.glowSpread}px ${fireColor}${Math.round(styles.glowOpacity * 255).toString(16).padStart(2, '0')},
-                    inset 0 0 ${styles.glowSpread / 2}px ${fireColor}${Math.round(styles.glowOpacity * 0.5 * 255).toString(16).padStart(2, '0')}
-                `,
-                animation: `emberPulse ${2.5 - (intensity * 1.5)}s ease-in-out infinite alternate`,
-            }}
-        />
+        <>
+            {/* Ember Glow - Pulsing ambient light matching fire color */}
+            <div
+                className="absolute pointer-events-none"
+                style={{
+                    inset: 0, // Match card edge exactly
+                    borderRadius: '20px', // Match card radius precisely
+                    boxShadow: `
+                        0 0 ${styles.glowSpread}px ${fireColor}${Math.round(styles.glowOpacity * 255).toString(16).padStart(2, '0')},
+                        0 0 ${styles.glowSpread * 2}px ${fireColor}${Math.round(styles.glowOpacity * 0.5 * 255).toString(16).padStart(2, '0')},
+                        0 0 ${styles.glowSpread * 3}px ${fireColor}${Math.round(styles.glowOpacity * 0.25 * 255).toString(16).padStart(2, '0')}
+                    `,
+                    zIndex: -1,
+                    animation: `emberPulse ${2 - intensity}s ease-in-out infinite alternate`,
+                }}
+            />
+
+            {/* Pre-rendered Animated WebP - Straight Border + Wavy Energy */}
+            <img
+                src={borderSrc}
+                alt=""
+                className="absolute pointer-events-none"
+                style={{
+                    // ALIGNMENT MATH:
+                    // Capture Canvas: 400x580
+                    // Card Area in Capture: 360x540 (at 20px,20px)
+                    // Width Ratio: 400/360 = 111.111%
+                    // Height Ratio: 580/540 = 107.407%
+                    // Left Offset: -20/360 = -5.555%
+                    // Top Offset: -20/540 = -3.703%
+
+                    width: '111.111%',
+                    height: '107.407%',
+                    maxWidth: 'none',
+                    left: '-5.555%',
+                    top: '-3.703%',
+                    opacity: styles.opacity,
+                    filter: styles.filter,
+                    objectFit: 'fill',
+                    imageRendering: 'auto',
+                    WebkitBackfaceVisibility: 'hidden',
+                    backfaceVisibility: 'hidden',
+                    zIndex: 1, // Sits on card face, but BEHIND weapon image
+                }}
+            />
+        </>
     );
 }
 
