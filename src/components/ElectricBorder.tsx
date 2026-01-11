@@ -31,16 +31,9 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
     // Scale intensity based on forge level (1-7)
     const intensity = forgeLevel / 7;
 
-    // Robust check for Even IDs (Cyan) vs Odd IDs (Orange)
-    // Handles '002', 'artifact_002', etc.
-    const id = artifactId || '';
-    const isCyan = id.includes('002') || id.includes('004') || id.includes('006') || id.includes('008') || id.includes('010') || id.includes('012');
-
-    // Define Color & Asset
-    const fireColor = isCyan ? '#00f2ff' : '#ff5500'; // Cyan vs Orange
-    const borderSrc = isCyan
-        ? "/effects/electric-border-cyan.webp"
-        : "/effects/electric-border-orange.webp";
+    // Unified Color Scheme -> All Cyan
+    const fireColor = '#00f2ff';
+    const borderSrc = "/effects/electric-border-cyan.webp";
 
     // Calculate dynamic styles based on forge level
     const styles = useMemo(() => {
