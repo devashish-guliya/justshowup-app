@@ -31,11 +31,15 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
     // Scale intensity based on forge level (1-7)
     const intensity = forgeLevel / 7;
 
-    // Get the fire color for this artifact
-    const fireColor = '#ff5500'; // Orange electric current
+    // Parse artifact ID to determine color scheme (Odd = Orange, Even = Cyan)
+    const idNumber = parseInt(artifactId || '1', 10);
+    const isEven = idNumber % 2 === 0;
 
-    // Universal border for all weapons
-    const borderSrc = "/effects/electric-border-orange.webp";
+    // Define Color & Asset
+    const fireColor = isEven ? '#00f2ff' : '#ff5500'; // Cyan vs Orange
+    const borderSrc = isEven
+        ? "/effects/electric-border-cyan.webp"
+        : "/effects/electric-border-orange.webp";
 
     // Calculate dynamic styles based on forge level
     const styles = useMemo(() => {
