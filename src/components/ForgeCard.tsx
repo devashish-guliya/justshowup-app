@@ -158,48 +158,7 @@ export function ForgeCard({
   const isReady = wordCount >= TARGET_WORDS && isToday && !isComplete && !isSubmitting;
   const forgePercent = FORGE_FILL[forgeLevel] || 0;
 
-  // 3D Tilt State
-  const [rotate, setRotate] = useState({ x: 0, y: 0 });
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left; // x position within the element
-    const y = e.clientY - rect.top; // y position within the element
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-
-    // Rotate X (vertical tilt) is based on Y distance from center
-    // Rotate Y (horizontal tilt) is based on X distance from center (inverted)
-    const rotateX = ((y - centerY) / centerY) * -10; // Max 10 deg tilt
-    const rotateY = ((x - centerX) / centerX) * 10;
-
-    setRotate({ x: rotateX, y: rotateY });
-  };
-
-  const handleMouseLeave = () => {
-    setRotate({ x: 0, y: 0 });
-  };
-
-  // Touch event handlers for mobile
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!cardRef.current || e.touches.length === 0) return;
-    const touch = e.touches[0];
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-
-    const rotateX = ((y - centerY) / centerY) * -10;
-    const rotateY = ((x - centerX) / centerX) * 10;
-
-    setRotate({ x: rotateX, y: rotateY });
-  };
-
-  const handleTouchEnd = () => {
-    setRotate({ x: 0, y: 0 });
-  };
 
   return (
     <>
@@ -207,10 +166,6 @@ export function ForgeCard({
         className="card-container group"
         ref={containerRef}
         style={{ perspective: '1000px' }} // enable 3D space
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
       >
         <div
           className={`card ${isFlipped ? 'flipped' : ''}`}
@@ -218,11 +173,7 @@ export function ForgeCard({
           style={{
             width: cardSize.width,
             height: cardSize.height,
-            // FIX: Flip should be on Y axis (180deg), Tilt is added to it.
-            // When flipped, we might want to disable tilt or inverse it?
-            // Simple approach: isFlipped -> rotateY(180), else rotateY(mouseY)
-            // Actually, let's keep tilt active but offset by 180 if flipped
-            transform: `rotateX(${rotate.x}deg) rotateY(${isFlipped ? 180 + rotate.y : rotate.y}deg)`,
+            transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
             transition: 'transform 0.1s ease-out, width 0.3s, height 0.3s',
             transformStyle: 'preserve-3d', // Allow children to have their own depth
           }}
