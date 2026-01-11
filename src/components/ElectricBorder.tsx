@@ -84,6 +84,7 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
                 style={{
                     width: '111.111%',
                     height: '107.407%',
+                    maxWidth: 'none',
                     left: '-5.555%',
                     top: '-3.703%',
                     opacity: styles.opacity,
