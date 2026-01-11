@@ -63,7 +63,7 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
         <>
             {/* Ember Glow - Pulsing ambient light matching fire color */}
             <div
-                className="absolute pointer-events-none"
+                className="absolute pointer-events-none transition-all duration-300 ease-out"
                 style={{
                     inset: 0, // Match card edge exactly
                     borderRadius: '20px', // Match card radius precisely
@@ -74,39 +74,44 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
                     `,
                     zIndex: -1,
                     animation: `emberPulse ${2 - intensity}s ease-in-out infinite alternate`,
+                    transform: 'translateZ(-10px)', // Slight depth behind card
+                    opacity: 0.8, // Constant strong visibility
                 }}
             />
 
-            {/* Pre-rendered Animated WebP - Straight Border + Wavy Energy */}
-            <img
-                src={borderSrc}
-                alt=""
+            {/* Wrapper for Positioning & Parallax Depth */}
+            <div
                 className="absolute pointer-events-none"
                 style={{
-                    // ALIGNMENT MATH:
-                    // Capture Canvas: 400x580
-                    // Card Area in Capture: 360x540 (at 20px,20px)
-                    // Width Ratio: 400/360 = 111.111%
-                    // Height Ratio: 580/540 = 107.407%
-                    // Left Offset: -20/360 = -5.555%
-                    // Top Offset: -20/540 = -3.703%
-
                     width: '111.111%',
                     height: '107.407%',
-                    maxWidth: 'none',
                     left: '-5.555%',
                     top: '-3.703%',
-                    opacity: styles.opacity,
-                    filter: styles.filter,
-                    objectFit: 'fill',
-                    imageRendering: 'auto',
-                    WebkitBackfaceVisibility: 'hidden',
-                    backfaceVisibility: 'hidden',
-                    zIndex: 1, // Sits on card face, but BEHIND weapon image
+                    zIndex: 1,
+                    transform: 'translateZ(-5px)', // Stable Parallax Depth
                 }}
-            />
+            >
+                {/* Visual Border Image - Handles Scaling & Filters */}
+                <img
+                    src={borderSrc}
+                    alt=""
+                    className="w-full h-full object-fill transition-all duration-300 ease-out scale-[0.96] group-hover:scale-[1.02]"
+                    style={{
+                        // MAX BRIGHTNESS SETTINGS
+                        opacity: 1,
+                        filter: `
+                            drop-shadow(0 0 0 white) 
+                            drop-shadow(0 0 0 white) 
+                            drop-shadow(0 0 8px white)
+                            brightness(2)
+                        `,
+                        mixBlendMode: 'normal',
+                        imageRendering: 'auto',
+                        WebkitBackfaceVisibility: 'hidden',
+                        backfaceVisibility: 'hidden',
+                    }}
+                />
+            </div>
         </>
     );
 }
-
-
