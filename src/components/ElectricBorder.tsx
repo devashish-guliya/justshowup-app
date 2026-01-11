@@ -82,7 +82,7 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
                 alt=""
                 className="absolute pointer-events-none"
                 style={{
-                    width: '110.556%',
+                    width: '110.35%',
                     height: '106.954%',
                     maxWidth: 'none',
                     left: '-5.555%',
