@@ -32,24 +32,22 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
     const intensity = forgeLevel / 7;
 
     // Get the fire color for this artifact
-    // Universal White Glow
-    const fireColor = '#FFFFFF';
+    const fireColor = '#ff5500'; // Dark Orange electric current
 
-    // Universal White Border for all weapons
-    // We reuse the '001' file which was generated as Pure White
+    // Universal border for all weapons
     const borderSrc = "/effects/electric-border-001.webp";
 
     // Calculate dynamic styles based on forge level
     const styles = useMemo(() => {
         // Base opacity
-        const opacity = 0.5 + (intensity * 0.5);
+        const opacity = 0.6 + (intensity * 0.4); // 0.6 to 1.0
 
         // Brightness increases with level
-        const brightness = 0.8 + (intensity * 0.7); // 0.8 to 1.5
+        const brightness = 1.0 + (intensity * 0.3); // 1.0 to 1.3
 
         // Glow intensity scales with forge level
-        const glowSpread = 20 + (intensity * 40); // 20px to 60px
-        const glowOpacity = 0.3 + (intensity * 0.4); // 0.3 to 0.7
+        const glowSpread = 15 + (intensity * 25); // 15px to 40px
+        const glowOpacity = 0.3 + (intensity * 0.3); // 0.3 to 0.6
 
         return {
             opacity,
@@ -61,57 +59,43 @@ export function ElectricBorder({ forgeLevel, artifactId }: ElectricBorderProps) 
 
     return (
         <>
-            {/* Ember Glow - Pulsing ambient light matching fire color */}
+            {/* Ember Glow - Subtle ambient light */}
             <div
-                className="absolute pointer-events-none transition-all duration-300 ease-out"
+                className="absolute pointer-events-none"
                 style={{
-                    inset: 0, // Match card edge exactly
-                    borderRadius: '20px', // Match card radius precisely
+                    inset: 0,
+                    borderRadius: '20px',
                     boxShadow: `
                         0 0 ${styles.glowSpread}px ${fireColor}${Math.round(styles.glowOpacity * 255).toString(16).padStart(2, '0')},
-                        0 0 ${styles.glowSpread * 2}px ${fireColor}${Math.round(styles.glowOpacity * 0.5 * 255).toString(16).padStart(2, '0')},
-                        0 0 ${styles.glowSpread * 3}px ${fireColor}${Math.round(styles.glowOpacity * 0.25 * 255).toString(16).padStart(2, '0')}
+                        0 0 ${styles.glowSpread * 2}px ${fireColor}${Math.round(styles.glowOpacity * 0.5 * 255).toString(16).padStart(2, '0')}
                     `,
                     zIndex: -1,
                     animation: `emberPulse ${2 - intensity}s ease-in-out infinite alternate`,
-                    transform: 'translateZ(-10px)', // Slight depth behind card
-                    opacity: 0.8, // Constant strong visibility
+                    transform: 'translateZ(-10px)',
+                    opacity: 0.5,
                 }}
             />
 
-            {/* Wrapper for Positioning & Parallax Depth */}
-            <div
+            {/* Thin animated electric current border */}
+            <img
+                src={borderSrc}
+                alt=""
                 className="absolute pointer-events-none"
                 style={{
                     width: '111.111%',
                     height: '107.407%',
                     left: '-5.555%',
                     top: '-3.703%',
+                    opacity: styles.opacity,
+                    filter: styles.filter,
+                    objectFit: 'fill',
+                    imageRendering: 'auto',
+                    WebkitBackfaceVisibility: 'hidden',
+                    backfaceVisibility: 'hidden',
                     zIndex: 1,
-                    transform: 'translateZ(-5px)', // Stable Parallax Depth
+                    transform: 'translateZ(-5px)', // Parallax depth
                 }}
-            >
-                {/* Visual Border Image - Handles Scaling & Filters */}
-                <img
-                    src={borderSrc}
-                    alt=""
-                    className="w-full h-full object-fill transition-all duration-300 ease-out scale-[0.90] group-hover:scale-[1.02]"
-                    style={{
-                        // MAX BRIGHTNESS SETTINGS
-                        opacity: 1,
-                        filter: `
-                            drop-shadow(0 0 0 white) 
-                            drop-shadow(0 0 0 white) 
-                            drop-shadow(0 0 8px white)
-                            brightness(2)
-                        `,
-                        mixBlendMode: 'normal',
-                        imageRendering: 'auto',
-                        WebkitBackfaceVisibility: 'hidden',
-                        backfaceVisibility: 'hidden',
-                    }}
-                />
-            </div>
+            />
         </>
     );
 }
